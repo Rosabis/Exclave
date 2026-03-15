@@ -1666,12 +1666,15 @@ class ConfigurationFragment @JvmOverloads constructor(
                 popup.menuInflater.inflate(R.menu.profile_item_menu, popup.menu)
 
                 // Remove share menu items if not available
-                if (!proxyEntity.hasShareLink() && proxyEntity.wgBean == null) {
-                    popup.menu.findItem(R.id.action_share)?.menu?.removeItem(R.id.action_qr)
-                    popup.menu.findItem(R.id.action_share)?.menu?.removeItem(R.id.action_clipboard)
-                }
-                if (!proxyEntity.canExportBackup()) {
-                    popup.menu.findItem(R.id.action_share)?.menu?.removeItem(R.id.action_export_backup)
+                val shareItem = popup.menu.findItem(R.id.action_share)
+                if (shareItem != null && shareItem.hasSubMenu()) {
+                    if (!proxyEntity.hasShareLink() && proxyEntity.wgBean == null) {
+                        shareItem.subMenu?.removeItem(R.id.action_qr)
+                        shareItem.subMenu?.removeItem(R.id.action_clipboard)
+                    }
+                    if (!proxyEntity.canExportBackup()) {
+                        shareItem.subMenu?.removeItem(R.id.action_export_backup_clipboard)
+                    }
                 }
 
                 popup.setOnMenuItemClickListener { item ->
