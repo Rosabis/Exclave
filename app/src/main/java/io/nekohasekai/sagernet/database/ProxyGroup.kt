@@ -22,6 +22,7 @@ package io.nekohasekai.sagernet.database
 import androidx.room.*
 import com.esotericsoftware.kryo.io.ByteBufferInput
 import com.esotericsoftware.kryo.io.ByteBufferOutput
+import io.nekohasekai.sagernet.GroupLayout
 import io.nekohasekai.sagernet.GroupOrder
 import io.nekohasekai.sagernet.GroupType
 import io.nekohasekai.sagernet.R
@@ -38,6 +39,7 @@ data class ProxyGroup(
     var type: Int = GroupType.BASIC,
     var subscription: SubscriptionBean? = null,
     var order: Int = GroupOrder.ORIGIN,
+    var layout: Int = GroupLayout.SINGLE_COLUMN,
     @ColumnInfo(defaultValue = (-1L).toString()) var frontProxy: Long = -1L,
     @ColumnInfo(defaultValue = (-1L).toString()) var landingProxy: Long = -1L
 ) : Serializable() {
@@ -57,7 +59,7 @@ data class ProxyGroup(
             val subscription = subscription!!
             subscription.serializeForShare(output)
         } else {
-            output.writeInt(1)
+            output.writeInt(2) // version 2 with layout
             output.writeLong(id)
             output.writeLong(userOrder)
             output.writeBoolean(ungrouped)
@@ -67,6 +69,7 @@ data class ProxyGroup(
                 subscription?.serializeToBuffer(output)
             }
             output.writeInt(order)
+            output.writeInt(layout)
             output.writeLong(frontProxy)
             output.writeLong(landingProxy)
         }
@@ -93,6 +96,9 @@ data class ProxyGroup(
                 subscription.deserializeFromBuffer(input)
             }
             order = input.readInt()
+            if (version >= 2) {
+                layout = input.readInt()
+            }
             if (version >= 1) {
                 frontProxy = input.readLong()
                 landingProxy = input.readLong()

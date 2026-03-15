@@ -141,5 +141,19 @@
             </group>
         </menu>
     </item>
+    <item
+        android:id="@+id/action_layout"
+        android:title="@string/group_layout">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/action_layout_single"
+                    android:title="@string/group_layout_single" />
+                <item
+                    android:id="@+id/action_layout_double"
+                    android:title="@string/group_layout_double" />
+            </group>
+        </menu>
+    </item>
 
 </menu>

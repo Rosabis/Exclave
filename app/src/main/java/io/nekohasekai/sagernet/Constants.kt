@@ -345,6 +345,11 @@ object GroupOrder {
     const val BY_DELAY = 2
 }
 
+object GroupLayout {
+    const val SINGLE_COLUMN = 0
+    const val DOUBLE_COLUMN = 1
+}
+
 object Action {
     const val SERVICE = "io.nekohasekai.sagernet.SERVICE"
     const val CLOSE = "io.nekohasekai.sagernet.CLOSE"

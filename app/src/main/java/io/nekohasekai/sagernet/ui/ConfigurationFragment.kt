@@ -42,6 +42,7 @@ import androidx.core.view.size
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -1097,6 +1098,44 @@ class ConfigurationFragment @JvmOverloads constructor(
                 updateTo(GroupOrder.BY_DELAY)
                 true
             }
+
+            // Layout menu
+            val layoutSingle = menu.findItem(R.id.action_layout_single)
+            val layoutDouble = menu.findItem(R.id.action_layout_double)
+            when (proxyGroup.layout) {
+                GroupLayout.SINGLE_COLUMN -> {
+                    layoutSingle.isChecked = true
+                }
+                GroupLayout.DOUBLE_COLUMN -> {
+                    layoutDouble.isChecked = true
+                }
+            }
+
+            fun updateLayout(layout: Int) {
+                if (proxyGroup.layout == layout) return
+                proxyGroup.layout = layout
+                // Update layout manager immediately
+                layoutManager = if (layout == GroupLayout.DOUBLE_COLUMN) {
+                    GridLayoutManager(requireContext(), 2)
+                } else {
+                    FixedLinearLayoutManager(configurationListView)
+                }
+                configurationListView.layoutManager = layoutManager
+                runOnDefaultDispatcher {
+                    GroupManager.updateGroup(proxyGroup)
+                }
+            }
+
+            layoutSingle.setOnMenuItemClickListener {
+                it.isChecked = true
+                updateLayout(GroupLayout.SINGLE_COLUMN)
+                true
+            }
+            layoutDouble.setOnMenuItemClickListener {
+                it.isChecked = true
+                updateLayout(GroupLayout.DOUBLE_COLUMN)
+                true
+            }
         }
 
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -1116,7 +1155,11 @@ class ConfigurationFragment @JvmOverloads constructor(
                 )
                 insets
             }
-            layoutManager = FixedLinearLayoutManager(configurationListView)
+            layoutManager = if (proxyGroup.layout == GroupLayout.DOUBLE_COLUMN) {
+                GridLayoutManager(requireContext(), 2)
+            } else {
+                FixedLinearLayoutManager(configurationListView)
+            }
             configurationListView.layoutManager = layoutManager
             adapter = ConfigurationAdapter()
             ProfileManager.addListener(adapter)

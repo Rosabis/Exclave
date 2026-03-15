@@ -342,6 +342,9 @@
     <string name="group_order_origin">By original order</string>
     <string name="group_order_by_name">Alphabetically</string>
     <string name="group_order_by_delay">By latency</string>
+    <string name="group_layout">Layout</string>
+    <string name="group_layout_single">Single column</string>
+    <string name="group_layout_double">Double column</string>
     <string name="plugin_exists_but_on_shit_system">Profile %s requires %s plugin, but your proprietary equipment vendor (usually surveillance capital giants and malware maker) tampered with your Android, making the plugin unusable.</string>
     <string name="traffic_uplink">%s | %s/s ↑</string>
     <string name="traffic_downlink">%s | %s/s ↓</string>
