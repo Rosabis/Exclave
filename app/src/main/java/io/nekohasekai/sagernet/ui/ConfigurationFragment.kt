@@ -1478,6 +1478,7 @@ class ConfigurationFragment @JvmOverloads constructor(
             val shareLayer: LinearLayout = view.findViewById(R.id.share_layer)
             val shareButton: ImageView = view.findViewById(R.id.shareIcon)
             val deleteButton: ImageView = view.findViewById(R.id.deleteIcon)
+            val moreIcon: ImageView = view.findViewById(R.id.moreIcon)
 
             fun bind(proxyEntity: ProxyEntity) {
                 val parent = parent ?: return
@@ -1596,9 +1597,13 @@ class ConfigurationFragment @JvmOverloads constructor(
                     }
                 }
 
-                editButton.isGone = parent.select
-                deleteButton.isGone = parent.select
-                shareButton.isGone = parent.select
+                // Check if double column layout
+                val isDoubleColumn = proxyGroup.layout == GroupLayout.DOUBLE_COLUMN
+                
+                editButton.isGone = parent.select || isDoubleColumn
+                deleteButton.isGone = parent.select || isDoubleColumn
+                shareLayout.isGone = parent.select || isDoubleColumn
+                moreIcon.isGone = parent.select || !isDoubleColumn
 
                 runOnDefaultDispatcher {
                     val selected = (parent.selectedItem?.id
@@ -1628,24 +1633,90 @@ class ConfigurationFragment @JvmOverloads constructor(
                     if (!parent.select) {
                         val isInsecure = DataStore.profileSecurityAdvisory && proxyEntity.requireBean().isInsecure
                         onMainDispatcher {
-                            if (isInsecure) {
-                                shareLayer.setBackgroundColor(Color.RED)
-                                shareButton.setImageResource(R.drawable.ic_baseline_warning_24)
-                                shareButton.setColorFilter(Color.WHITE)
+                            if (isDoubleColumn) {
+                                // Double column: show more menu icon
+                                moreIcon.setOnClickListener {
+                                    showMoreMenu(it, proxyEntity, started)
+                                }
                             } else {
-                                shareLayer.setBackgroundColor(Color.TRANSPARENT)
-                                shareButton.setImageResource(R.drawable.ic_social_share)
-                                shareButton.setColorFilter(Color.GRAY)
+                                // Single column: show original buttons
+                                if (isInsecure) {
+                                    shareLayer.setBackgroundColor(Color.RED)
+                                    shareButton.setImageResource(R.drawable.ic_baseline_warning_24)
+                                    shareButton.setColorFilter(Color.WHITE)
+                                } else {
+                                    shareLayer.setBackgroundColor(Color.TRANSPARENT)
+                                    shareButton.setImageResource(R.drawable.ic_social_share)
+                                    shareButton.setColorFilter(Color.GRAY)
 
-                            }
-                            shareButton.isVisible = true
-                            shareLayout.setOnClickListener {
-                                showShare(it)
+                                }
+                                shareButton.isVisible = true
+                                shareLayout.setOnClickListener {
+                                    showShare(it)
+                                }
                             }
                         }
                     }
                 }
 
+            }
+
+            fun showMoreMenu(anchor: View, proxyEntity: ProxyEntity, started: Boolean) {
+                val popup = PopupMenu(requireContext(), anchor)
+                popup.menuInflater.inflate(R.menu.profile_item_menu, popup.menu)
+
+                // Remove share menu items if not available
+                if (!proxyEntity.hasShareLink() && proxyEntity.wgBean == null) {
+                    popup.menu.findItem(R.id.action_share)?.menu?.removeItem(R.id.action_qr)
+                    popup.menu.findItem(R.id.action_share)?.menu?.removeItem(R.id.action_clipboard)
+                }
+                if (!proxyEntity.canExportBackup()) {
+                    popup.menu.findItem(R.id.action_share)?.menu?.removeItem(R.id.action_export_backup)
+                }
+
+                popup.setOnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        R.id.action_edit -> {
+                            proxyEntity.settingIntent(anchor.context, proxyGroup.type == GroupType.SUBSCRIPTION)?.let {
+                                editProfileLauncher.launch(it)
+                            }
+                        }
+                        R.id.action_delete -> {
+                            adapter.let {
+                                val index = it.configurationIdList.indexOf(proxyEntity.id)
+                                if (index >= 0) {
+                                    it.remove(index)
+                                    undoManager.remove(index to proxyEntity)
+                                }
+                            }
+                        }
+                        R.id.action_qr -> {
+                            if (proxyEntity.wgBean != null) {
+                                proxyEntity.wgBean?.toConf()?.let { showCode(it) }
+                            } else {
+                                proxyEntity.toLink()?.let { showCode(it) }
+                            }
+                        }
+                        R.id.action_clipboard -> {
+                            if (proxyEntity.wgBean != null) {
+                                proxyEntity.wgBean?.toConf()?.let { export(it) }
+                            } else {
+                                proxyEntity.toLink()?.let { export(it) }
+                            }
+                        }
+                        R.id.action_export_config_clipboard -> export(proxyEntity.exportConfig().first)
+                        R.id.action_export_config_file -> {
+                            val cfg = proxyEntity.exportConfig()
+                            DataStore.serverConfig = cfg.first
+                            startFilesForResult(
+                                (parentFragment as ConfigurationFragment).exportConfig, cfg.second
+                            )
+                        }
+                        R.id.action_export_backup_clipboard -> export(proxyEntity.requireBean().exportBackup())
+                    }
+                    true
+                }
+                popup.show()
             }
 
             fun showCode(link: String) {
