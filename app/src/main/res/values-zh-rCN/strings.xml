@@ -86,6 +86,8 @@
     <string name="clear_selections">清空</string>
     <string name="bypass_apps">绕过</string>
     <string name="show_system_apps">显示系统应用</string>
+    <string name="auto_select_proxy_apps">自动选择需要代理的应用</string>
+    <string name="auto_select_proxy_apps_message">自动选择需要代理的应用，这将清除您当前的选择。</string>
     <string name="auto_connect">自动连接</string>
     <string name="auto_connect_summary">设备启动或应用更新后恢复此前连接状态</string>
     <!-- notification category -->
@@ -271,6 +273,8 @@
     <string name="update_when_connected_only_sum">防止 IP 地址泄漏</string>
     <string name="subscription_user_agent">用户代理</string>
     <string name="confirm">确认</string>
+    <string name="yes">是</string>
+    <string name="no">否</string>
     <string name="missing_plugin">缺少插件</string>
     <string name="profile_requiring_plugin">配置 %s 需要插件 %s，但找不到。</string>
     <string name="service_subscription">订阅更新服务</string>

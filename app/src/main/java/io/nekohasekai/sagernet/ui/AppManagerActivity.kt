@@ -25,6 +25,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.text.TextUtils
 import android.util.SparseBooleanArray
 import android.view.*
 import android.widget.Filter
@@ -41,6 +42,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
 import io.nekohasekai.sagernet.BuildConfig
@@ -49,6 +51,7 @@ import io.nekohasekai.sagernet.SagerNet
 import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.databinding.LayoutAppsBinding
 import io.nekohasekai.sagernet.databinding.LayoutAppsItemBinding
+import io.nekohasekai.sagernet.ktx.app
 import io.nekohasekai.sagernet.ktx.crossFadeFrom
 import io.nekohasekai.sagernet.ktx.dp2px
 import io.nekohasekai.sagernet.ktx.onMainDispatcher
@@ -258,6 +261,8 @@ class AppManagerActivity : ThemedActivity() {
             }
         }
 
+        binding.autoSelectProxyApps.setOnClickListener { selectProxyApp() }
+
         initProxiedUids()
         binding.list.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
         binding.list.itemAnimator = DefaultItemAnimator()
@@ -349,6 +354,59 @@ class AppManagerActivity : ThemedActivity() {
 
     override fun supportNavigateUpTo(upIntent: Intent) =
         super.supportNavigateUpTo(upIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+
+    private fun selectProxyApp() {
+        MaterialAlertDialogBuilder(this).setTitle(R.string.confirm)
+            .setMessage(R.string.auto_select_proxy_apps_message)
+            .setPositiveButton(R.string.yes) { _, _ ->
+                try {
+                    val needProxyAppsList = getAutoProxyApps("")
+                    val bypass = DataStore.bypass
+                    proxiedUids.clear()
+                    for (app in cachedApps) {
+                        val needProxy =
+                            needProxyAppsList.contains(app.key) || (app.value.applicationInfo?.uid
+                                ?: 0) == 1000
+                        if (needProxy) {
+                            if (!bypass) {
+                                app.value.applicationInfo?.apply {
+                                    proxiedUids[uid] = true
+                                }
+                            }
+                        } else {
+                            if (bypass) {
+                                app.value.applicationInfo?.apply {
+                                    proxiedUids[uid] = true
+                                }
+                            }
+                        }
+                    }
+                    DataStore.individual =
+                        apps.filter { isProxiedApp(it) }.joinToString("\n") { it.packageName }
+                    apps = apps.sortedWith(compareBy({ !isProxiedApp(it) }, { it.name.toString() }))
+                    appsAdapter.notifyItemRangeChanged(0, appsAdapter.itemCount, SWITCH)
+                } catch (_: Exception) {
+                }
+            }
+            .setNegativeButton(R.string.no, null)
+            .show()
+    }
+
+    private fun getAutoProxyApps(content: String): List<String> {
+        var list = listOf<String>()
+        try {
+            val proxyApps = if (TextUtils.isEmpty(content)) {
+                app.assets.open("proxy_packagename.txt").bufferedReader().use { it.readText() }
+            } else {
+                content
+            }
+            if (!TextUtils.isEmpty(proxyApps)) {
+                list = proxyApps.split("\n")
+            }
+        } catch (_: Exception) {
+        }
+        return list
+    }
 
     override fun onDestroy() {
         instance = null

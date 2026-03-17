@@ -164,6 +164,8 @@
     <string name="clear_selections">Clear selections</string>
     <string name="bypass_apps">Bypass</string>
     <string name="show_system_apps">Show system apps</string>
+    <string name="auto_select_proxy_apps">Auto select proxy apps</string>
+    <string name="auto_select_proxy_apps_message">Auto select proxy apps, this will clear your current selection.</string>
     <string name="auto_connect">Auto connect</string>
     <string name="auto_connect_summary">Restore the previous connection status after device boot or app update</string>
     <!-- notification category -->
@@ -311,6 +313,8 @@
     <string name="update_when_connected_only_sum">Prevent IP address leak</string>
     <string name="subscription_user_agent">User agent</string>
     <string name="confirm">Confirm</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
     <string name="missing_plugin">Missing plugin</string>
     <string name="profile_requiring_plugin">Profile %s requires %s plugin, but it was not found.</string>
     <string name="update_subscription_warning">Proxy is not connected, are you sure you want to continue updating?</string>
