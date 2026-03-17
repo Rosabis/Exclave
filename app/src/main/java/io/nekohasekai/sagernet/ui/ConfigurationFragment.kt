@@ -20,9 +20,14 @@
 package io.nekohasekai.sagernet.ui
 
 import android.app.Activity
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.provider.OpenableColumns
 import android.view.*
@@ -34,6 +39,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.NotificationCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isGone
@@ -651,13 +657,87 @@ class ConfigurationFragment @JvmOverloads constructor(
                 close()
                 cancel()
             }
-            .setNeutralButton(" ", null)
+            .setNeutralButton(R.string.connection_test_minimize) { _, _ ->
+                minimize()
+            }
             .setCancelable(false)
+        var dialog: AlertDialog? = null
         lateinit var cancel: () -> Unit
+        var isMinimized = false
+        var totalProfiles = 0
+        var finishedProfiles = 0
         val results = ArrayList<ProxyEntity>()
         val adapter = TestAdapter()
         val scrollTimer = Timer("insert timer")
         var currentTask: TimerTask? = null
+        
+        private val notificationManager by lazy {
+            requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        }
+        
+        companion object {
+            const val NOTIFICATION_CHANNEL_ID = "url_test_channel"
+            const val NOTIFICATION_ID = 1001
+        }
+        
+        private fun createNotificationChannel() {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channel = NotificationChannel(
+                    NOTIFICATION_CHANNEL_ID,
+                    getString(R.string.connection_test_notification_title),
+                    NotificationManager.IMPORTANCE_LOW
+                )
+                notificationManager.createNotificationChannel(channel)
+            }
+        }
+        
+        private fun createNotificationBuilder(): NotificationCompat.Builder {
+            createNotificationChannel()
+            val intent = Intent(requireContext(), MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                putExtra("restore_url_test", true)
+            }
+            val pendingIntent = PendingIntent.getActivity(
+                requireContext(), 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            return NotificationCompat.Builder(requireContext(), NOTIFICATION_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_baseline_speed_24)
+                .setContentTitle(getString(R.string.connection_test_notification_title))
+                .setOngoing(true)
+                .setProgress(100, 0, false)
+                .setContentIntent(pendingIntent)
+        }
+        
+        fun updateNotification(current: Int, total: Int) {
+            if (!isMinimized) return
+            val builder = createNotificationBuilder()
+                .setContentText(getString(R.string.connection_test_notification_message, current, total))
+                .setProgress(total, current, false)
+            notificationManager.notify(NOTIFICATION_ID, builder.build())
+        }
+        
+        fun showCompletionNotification() {
+            val builder = createNotificationBuilder()
+                .setContentTitle(getString(R.string.connection_test_notification_complete))
+                .setContentText(getString(R.string.connection_test_notification_click_to_open))
+                .setOngoing(false)
+                .setProgress(0, 0, false)
+            notificationManager.notify(NOTIFICATION_ID, builder.build())
+        }
+        
+        fun minimize() {
+            isMinimized = true
+            dialog?.dismiss()
+            updateNotification(finishedProfiles, totalProfiles)
+        }
+        
+        fun restore() {
+            isMinimized = false
+            notificationManager.cancel(NOTIFICATION_ID)
+            dialog = builder.show()
+            dialog?.getButton(DialogInterface.BUTTON_NEUTRAL)?.text = "$finishedProfiles/$totalProfiles"
+        }
 
         fun insert(profile: ProxyEntity) {
             binding.listView.post {
@@ -762,8 +842,8 @@ class ConfigurationFragment @JvmOverloads constructor(
     @Suppress("EXPERIMENTAL_API_USAGE")
     fun urlTest() {
         val test = TestDialog()
-        val dialog = test.builder.show()
-        dialog.getButton(DialogInterface.BUTTON_NEUTRAL).isEnabled = false
+        test.dialog = test.builder.show()
+        test.dialog?.getButton(DialogInterface.BUTTON_NEUTRAL)?.isEnabled = false
         val testJobs = mutableListOf<Job>()
 
         val mainJob = runOnDefaultDispatcher {
@@ -781,13 +861,15 @@ class ConfigurationFragment @JvmOverloads constructor(
             val profiles = ConcurrentLinkedQueue(profilesUnfiltered)
 
             val profileCount = profilesUnfiltered.size
+            test.totalProfiles = profileCount
             var finishedProfileCount = 0
             //stopService()
 
             val link = DataStore.connectionTestURL
-            val timeout = 5000
+            val timeout = DataStore.connectionTestTimeout
+            val concurrency = DataStore.connectionTestConcurrency
 
-            repeat(6) {
+            repeat(concurrency) {
                 testJobs.add(launch {
                     while (isActive) {
                         val profile = profiles.poll() ?: break
@@ -814,6 +896,7 @@ class ConfigurationFragment @JvmOverloads constructor(
                         }
                         onMainDispatcher {
                             finishedProfileCount++
+                            test.finishedProfiles = finishedProfileCount
                             test.binding.progressCircular.apply {
                                 isVisible = true
                                 setProgressCompat(
@@ -822,7 +905,9 @@ class ConfigurationFragment @JvmOverloads constructor(
                                 )
                             }
                             // TODO: fix l10n
-                            dialog.getButton(DialogInterface.BUTTON_NEUTRAL).text = "$finishedProfileCount/$profileCount"
+                            test.dialog?.getButton(DialogInterface.BUTTON_NEUTRAL)?.text = "$finishedProfileCount/$profileCount"
+                            // Update notification if minimized
+                            test.updateNotification(finishedProfileCount, profileCount)
                         }
 
                         test.update(profile)
@@ -835,7 +920,12 @@ class ConfigurationFragment @JvmOverloads constructor(
             test.close()
             onMainDispatcher {
                 test.binding.progressCircular.isGone = true
-                dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setText(android.R.string.ok)
+                if (test.isMinimized) {
+                    // Show completion notification
+                    test.showCompletionNotification()
+                } else {
+                    test.dialog?.getButton(DialogInterface.BUTTON_NEGATIVE)?.setText(android.R.string.ok)
+                }
             }
         }
         test.cancel = {

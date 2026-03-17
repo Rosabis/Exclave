@@ -87,6 +87,13 @@
     <string name="require_transproxy">Enable transparent proxy inbound</string>
     <string name="transproxy_mode">Transparent proxy mode</string>
     <string name="connection_test_url">Connection test URL</string>
+    <string name="connection_test_concurrency">Connection test concurrency</string>
+    <string name="connection_test_timeout_setting">Connection test timeout (ms)</string>
+    <string name="connection_test_minimize">Minimize</string>
+    <string name="connection_test_notification_title">URL Testing</string>
+    <string name="connection_test_notification_message">Testing %1$d/%2$d profiles</string>
+    <string name="connection_test_notification_complete">URL Test Complete</string>
+    <string name="connection_test_notification_click_to_open">Tap to view results</string>
     <string name="probe_url">Custom test URL</string>
     <!-- proxy category -->
     <string name="profile_name">Profile name</string>

@@ -205,6 +205,13 @@
     <string name="transproxy_mode">透明代理模式</string>
     <string name="port_transproxy">透明代理端口</string>
     <string name="connection_test_url">连接测试 URL</string>
+    <string name="connection_test_concurrency">连接测试并发数</string>
+    <string name="connection_test_timeout_setting">连接测试超时 (ms)</string>
+    <string name="connection_test_minimize">最小化</string>
+    <string name="connection_test_notification_title">URL 测试中</string>
+    <string name="connection_test_notification_message">正在测试 %1$d/%2$d 个配置</string>
+    <string name="connection_test_notification_complete">URL 测试完成</string>
+    <string name="connection_test_notification_click_to_open">点击查看结果</string>
     <string name="connection_test_available_http">连接成功：HTTP 握手耗时 %d 毫秒</string>
     <string name="route_reverse">反向代理</string>
     <string name="route_reverse_redirect">反向代理地址</string>

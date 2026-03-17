@@ -213,6 +213,18 @@
             app:key="connectionTestURL"
             app:title="@string/connection_test_url"
             app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:defaultValue="6"
+            app:icon="@drawable/ic_baseline_grid_3x3_24"
+            app:key="connectionTestConcurrency"
+            app:title="@string/connection_test_concurrency"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:defaultValue="5000"
+            app:icon="@drawable/ic_baseline_timelapse_24"
+            app:key="connectionTestTimeout"
+            app:title="@string/connection_test_timeout_setting"
+            app:useSimpleSummaryProvider="true" />
         <com.takisoft.preferencex.SimpleMenuPreference
             android:icon="@drawable/baseline_flight_takeoff_24"
             app:defaultValue="0"
