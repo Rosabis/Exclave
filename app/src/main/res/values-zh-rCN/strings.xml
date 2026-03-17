@@ -85,6 +85,7 @@
     <string name="invert_selections">反选</string>
     <string name="clear_selections">清空</string>
     <string name="bypass_apps">绕过</string>
+    <string name="auto_select">自动选择</string>
     <string name="show_system_apps">显示系统应用</string>
     <string name="auto_connect">自动连接</string>
     <string name="auto_connect_summary">设备启动或应用更新后恢复此前连接状态</string>

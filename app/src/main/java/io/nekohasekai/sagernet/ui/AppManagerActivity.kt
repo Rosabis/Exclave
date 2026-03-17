@@ -194,6 +194,275 @@ class AppManagerActivity : ThemedActivity() {
 
     private fun isProxiedApp(app: ProxiedApp) = proxiedUids[app.uid]
 
+    /**
+     * 更新Chip的选中状态
+     */
+    private fun updateChipSelection(selectedId: Int) {
+        binding.appProxyModeDisable.isChecked = (selectedId == R.id.appProxyModeDisable)
+        binding.appProxyModeOn.isChecked = (selectedId == R.id.appProxyModeOn)
+        binding.appProxyModeBypass.isChecked = (selectedId == R.id.appProxyModeBypass)
+        binding.appProxyModeAuto.isChecked = (selectedId == R.id.appProxyModeAuto)
+    }
+
+    /**
+     * 自动选择需要代理的应用
+     * 基于预定义的需要代理的应用包名列表
+     */
+    private fun autoSelectProxyApps() {
+        runOnDefaultDispatcher {
+            // 需要代理的应用包名列表
+            val proxyPackages = setOf(
+                // Google services
+                "com.google.android.gms",
+                "com.google.android.gsf",
+                "com.google.android.gsf.login",
+                "com.google.android.backup",
+                "com.google.android.backuptransport",
+                "com.google.android.configupdater",
+                "com.google.android.syncadapters.contacts",
+                "com.google.android.syncadapters.calendar",
+                "com.google.android.apps.docs",
+                "com.google.android.apps.docs.editors.docs",
+                "com.google.android.apps.docs.editors.sheets",
+                "com.google.android.apps.docs.editors.slides",
+                "com.google.android.apps.photos",
+                "com.google.android.apps.photosgo",
+                "com.google.android.videos",
+                "com.google.android.music",
+                "com.google.android.videos",
+                "com.google.android.youtube",
+                "com.google.android.youtube.tv",
+                "com.google.android.apps.youtube.kids",
+                "com.google.android.apps.youtube.music",
+                "com.google.android.apps.youtube.creator",
+                "com.google.android.apps.youtube.vr",
+                // Google Play
+                "com.android.vending",
+                "com.google.android.feedback",
+                // Google Chrome
+                "com.android.chrome",
+                "com.chrome.beta",
+                "com.chrome.dev",
+                "com.chrome.canary",
+                // Gmail
+                "com.google.android.gm",
+                "com.google.android.gm.lite",
+                // Google Maps
+                "com.google.android.apps.maps",
+                "com.google.android.apps.mapslite",
+                // Google Drive
+                "com.google.android.apps.docs",
+                // Google Translate
+                "com.google.android.apps.translate",
+                // Google Assistant
+                "com.google.android.apps.googleassistant",
+                // Google Calendar
+                "com.google.android.calendar",
+                // Google Contacts
+                "com.google.android.contacts",
+                // Google Dialer
+                "com.google.android.dialer",
+                // Google Messages
+                "com.google.android.apps.messaging",
+                // Google Keep
+                "com.google.android.keep",
+                // Google Earth
+                "com.google.earth",
+                // Google Fit
+                "com.google.android.apps.fitness",
+                // Google News
+                "com.google.android.apps.magazines",
+                "com.google.android.apps.genie.geniewidget",
+                // Google Podcasts
+                "com.google.android.apps.podcasts",
+                // Google Tasks
+                "com.google.android.apps.tasks",
+                // Google Lens
+                "com.google.ar.lens",
+                // Google Home
+                "com.google.android.apps.chromecast.app",
+                // Android TV
+                "com.google.android.tv",
+                "com.google.android.tv.remote",
+                // Wear OS
+                "com.google.android.wearable.app",
+                "com.google.android.apps.wearable.companion",
+                // Social Media
+                "com.facebook.katana",
+                "com.facebook.orca",
+                "com.facebook.mlite",
+                "com.facebook.lite",
+                "com.instagram.android",
+                "com.instagram.lite",
+                "com.twitter.android",
+                "com.twitter.android.lite",
+                "com.whatsapp",
+                "com.whatsapp.w4b",
+                "com.telegram.messenger",
+                "org.telegram.messenger",
+                "com.discord",
+                "com.reddit.frontpage",
+                "com.linkedin.android",
+                "com.pinterest",
+                "com.tumblr",
+                "com.snapchat.android",
+                "com.tencent.mm",
+                "com.tencent.mobileqq",
+                "com.tencent.tim",
+                "com.tencent.qqlite",
+                "com.sina.weibo",
+                "com.zhihu.android",
+                "com.xiaomi.smarthome",
+                "com.douyin.app",
+                "com.ss.android.ugc.aweme",
+                "com.smile.gifmaker",
+                "com.kuaishou.nebula",
+                "com.ss.android.article.news",
+                "com.ss.android.article.video",
+                // Streaming
+                "com.netflix.mediaclient",
+                "com.spotify.music",
+                "com.spotify.lite",
+                "com.amazon.avod.thirdpartyclient",
+                "com.hulu.plus",
+                "com.disney.disneyplus",
+                "com.hbo.hbonow",
+                "com.apple.android.music",
+                "com.twitch.app",
+                "com.duolingo",
+                // Cloud Storage
+                "com.dropbox.android",
+                "com.microsoft.skydrive",
+                "com.box.android",
+                // Microsoft
+                "com.microsoft.office.outlook",
+                "com.microsoft.office.word",
+                "com.microsoft.office.excel",
+                "com.microsoft.office.powerpoint",
+                "com.microsoft.teams",
+                "com.microsoft.skype.teams",
+                "com.skype.raider",
+                "com.microsoft.bing",
+                "com.microsoft.cortana",
+                "com.microsoft.launcher",
+                // Amazon
+                "com.amazon.mShop.android.shopping",
+                "com.amazon.kindle",
+                "com.amazon.mp3",
+                "com.amazon.cloud9",
+                "com.amazon.dee.app",
+                // Other common apps that need proxy
+                "com.udemy.android",
+                "com.coursera.android",
+                "org.khanacademy.android",
+                "com.quora.android",
+                "com.medium.reader",
+                "com.notion.id",
+                "com.trello",
+                "com.slack",
+                "com.atlassian.android.jira.core",
+                "com.github.android",
+                "com.stackoverflow.stackoverflow",
+                "com.adobe.lrmobile",
+                "com.adobe.photoshopmix",
+                "com.adobe.photoshopexpress",
+                "com.adobe.premiererush.videoeditor",
+                "com.adobe.scan.android",
+                "com.adobe.acrobat.mobile",
+                "com.jetbrains.kotlin",
+                "com.ubisoft.uplay",
+                "com.ea.games.nfs13_row",
+                "com.ea.game.pvz2_row",
+                "com.ea.game.simcitymobile_row",
+                "com.rockstargames.gtasa",
+                "com.rockstargames.gtalcs",
+                "com.take2games.gta3",
+                "com.square_enix.android_googleplay.FFIV_GP",
+                "com.square_enix.android_googleplay.FFVI_GP",
+                "com.mojang.minecraftpe",
+                // VPN and Network tools
+                "com.cloudflare.onedotonedotonedotone",
+                "org.mozilla.firefox",
+                "org.mozilla.firefox_beta",
+                "org.mozilla.focus",
+                "org.mozilla.klar",
+                "com.brave.browser",
+                "com.opera.browser",
+                "com.opera.mini.native",
+                "com.opera.browser.beta",
+                "com.UCMobile.intl",
+                "com.UCMobile",
+                "com.cmcm.browser",
+                "com.apusapps.browser",
+                // News and Reading
+                "com.nytimes.android",
+                "com.washingtonpost.android",
+                "com.tribune.android",
+                "com.economist.gre",
+                "com.economist.droid",
+                "com.ft.android",
+                "com.bloomberg.android.plus",
+                "com.wsj.android",
+                "com.bbc.mobile.android.ww",
+                "com.cnn.mobile.android.phone",
+                "com.nbc.android.nbcnews",
+                "com.abc.abcnews",
+                "com.theguardian",
+                "com.telegraph.mobile",
+                "com.medium.reader",
+                // Gaming platforms
+                "com.valvesoftware.android.steam.friendsui",
+                "com.valvesoftware.android.steam.community",
+                "com.epicgames.portal",
+                "com.epicgames.fortnite",
+                // AI and Chat
+                "com.openai.chatgpt",
+                "com.microsoft.copilot",
+                "com.google.ai.assistant",
+                // Other
+                "com.slickdeals.android",
+                "com.ebay.mobile",
+                "com.etsy.android",
+                "com.alibaba.aliexpresshd",
+                "com.alibaba.intl.android.apps.poseidon",
+                "com.shopee.th",
+                "com.lazada.android",
+                "com.binance.dev",
+                "com.coinbase.android",
+                "com.kraken.trade",
+                "com.bitstamp.net",
+                "com.gemini.android.app"
+            )
+            
+            // 清空当前选择
+            proxiedUids.clear()
+            
+            // 获取已安装的应用
+            val installedApps = cachedApps
+            
+            // 选择需要代理的应用
+            for ((packageName, _) in installedApps) {
+                if (packageName in proxyPackages) {
+                    val appInfo = installedApps[packageName]?.applicationInfo
+                    if (appInfo != null) {
+                        proxiedUids[appInfo.uid] = true
+                    }
+                }
+            }
+            
+            // 保存选择
+            DataStore.individual = apps.filter { isProxiedApp(it) }
+                .joinToString("\n") { it.packageName }
+            
+            // 重新排序应用列表
+            apps = apps.sortedWith(compareBy({ !isProxiedApp(it) }, { it.name.toString() }))
+            
+            onMainDispatcher {
+                appsAdapter.filter.filter("")
+            }
+        }
+    }
+
     @UiThread
     private fun loadApps() {
         loader?.cancel()
@@ -246,16 +515,30 @@ class AppManagerActivity : ThemedActivity() {
             DataStore.proxyApps = true
         }
 
-        binding.bypassGroup.check(if (DataStore.bypass) R.id.appProxyModeBypass else R.id.appProxyModeOn)
-        binding.bypassGroup.setOnCheckedChangeListener { _, checkedId ->
-            when (checkedId) {
-                R.id.appProxyModeDisable -> {
-                    DataStore.proxyApps = false
-                    finish()
-                }
-                R.id.appProxyModeOn -> DataStore.bypass = false
-                R.id.appProxyModeBypass -> DataStore.bypass = true
-            }
+        // 设置初始选中状态
+        updateChipSelection(if (DataStore.bypass) R.id.appProxyModeBypass else R.id.appProxyModeOn)
+
+        // 设置按钮点击监听器
+        binding.appProxyModeDisable.setOnClickListener {
+            updateChipSelection(R.id.appProxyModeDisable)
+            DataStore.proxyApps = false
+            finish()
+        }
+
+        binding.appProxyModeOn.setOnClickListener {
+            updateChipSelection(R.id.appProxyModeOn)
+            DataStore.bypass = false
+        }
+
+        binding.appProxyModeBypass.setOnClickListener {
+            updateChipSelection(R.id.appProxyModeBypass)
+            DataStore.bypass = true
+        }
+
+        binding.appProxyModeAuto.setOnClickListener {
+            updateChipSelection(R.id.appProxyModeAuto)
+            DataStore.bypass = false
+            autoSelectProxyApps()
         }
 
         initProxiedUids()
@@ -330,7 +613,7 @@ class AppManagerActivity : ThemedActivity() {
                         } else proxiedAppString.substring(
                             0, i
                         ) to proxiedAppString.substring(i + 1)
-                        binding.bypassGroup.check(if (enabled.toBoolean()) R.id.appProxyModeBypass else R.id.appProxyModeOn)
+                        updateChipSelection(if (enabled.toBoolean()) R.id.appProxyModeBypass else R.id.appProxyModeOn)
                         DataStore.individual = apps
                         Snackbar.make(
                             binding.list, R.string.action_import_msg, Snackbar.LENGTH_LONG

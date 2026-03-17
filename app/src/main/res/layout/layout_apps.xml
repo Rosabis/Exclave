@@ -11,35 +11,48 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <com.google.android.material.chip.ChipGroup
+    <LinearLayout
         android:id="@+id/bypassGroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:paddingStart="4dp"
-        android:paddingEnd="4dp"
-        app:selectionRequired="true"
-        app:singleSelection="true">
+        android:paddingEnd="4dp">
 
         <com.google.android.material.chip.Chip
             android:id="@+id/appProxyModeDisable"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/off" />
+            android:layout_weight="1"
+            android:text="@string/off"
+            style="@style/Widget.MaterialComponents.Chip.Choice" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/appProxyModeOn"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/route_proxy" />
+            android:layout_weight="1"
+            android:text="@string/route_proxy"
+            style="@style/Widget.MaterialComponents.Chip.Choice" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/appProxyModeBypass"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:checked="true"
-            android:text="@string/bypass_apps" />
+            android:text="@string/bypass_apps"
+            style="@style/Widget.MaterialComponents.Chip.Choice" />
 
-    </com.google.android.material.chip.ChipGroup>
+        <com.google.android.material.chip.Chip
+            android:id="@+id/appProxyModeAuto"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/auto_select"
+            style="@style/Widget.MaterialComponents.Chip.Choice" />
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/loading"
