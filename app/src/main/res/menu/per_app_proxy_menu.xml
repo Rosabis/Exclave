@@ -6,6 +6,10 @@
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_auto_select_proxy_apps"
+        android:title="@string/auto_select_proxy_apps"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_invert_selections"
         android:title="@string/invert_selections"
         app:showAsAction="never" />

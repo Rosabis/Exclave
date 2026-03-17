@@ -261,8 +261,6 @@ class AppManagerActivity : ThemedActivity() {
             }
         }
 
-        binding.autoSelectProxyApps.setOnClickListener { selectProxyApp() }
-
         initProxiedUids()
         binding.list.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
         binding.list.itemAnimator = DefaultItemAnimator()
@@ -287,6 +285,10 @@ class AppManagerActivity : ThemedActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.action_auto_select_proxy_apps -> {
+                selectProxyApp()
+                return true
+            }
             R.id.action_invert_selections -> {
                 runOnDefaultDispatcher {
                     for (app in apps) {
