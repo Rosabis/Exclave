@@ -54,6 +54,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
+import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -650,6 +651,11 @@ class ConfigurationFragment @JvmOverloads constructor(
         return true
     }
 
+    companion object TestDialogConstants {
+        const val NOTIFICATION_CHANNEL_ID = "url_test_channel"
+        const val NOTIFICATION_ID = 1001
+    }
+
     inner class TestDialog {
         val binding = LayoutProgressListBinding.inflate(layoutInflater)
         val builder = MaterialAlertDialogBuilder(requireContext()).setView(binding.root)
@@ -673,11 +679,6 @@ class ConfigurationFragment @JvmOverloads constructor(
         
         private val notificationManager by lazy {
             requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        }
-        
-        companion object {
-            const val NOTIFICATION_CHANNEL_ID = "url_test_channel"
-            const val NOTIFICATION_ID = 1001
         }
         
         private fun createNotificationChannel() {
