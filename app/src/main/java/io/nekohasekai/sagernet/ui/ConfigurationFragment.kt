@@ -659,12 +659,15 @@ class ConfigurationFragment @JvmOverloads constructor(
     inner class TestDialog {
         val binding = LayoutProgressListBinding.inflate(layoutInflater)
         val builder = MaterialAlertDialogBuilder(requireContext()).setView(binding.root)
-            .setNegativeButton(android.R.string.cancel) { _, _ ->
-                close()
-                cancel()
+            .setNegativeButton("0/0") { _, _ ->
+                // This button shows progress, no action on click
             }
             .setNeutralButton(R.string.connection_test_minimize) { _, _ ->
                 minimize()
+            }
+            .setPositiveButton(android.R.string.cancel) { _, _ ->
+                close()
+                cancel()
             }
             .setCancelable(false)
         var dialog: AlertDialog? = null
@@ -737,7 +740,8 @@ class ConfigurationFragment @JvmOverloads constructor(
             isMinimized = false
             notificationManager.cancel(NOTIFICATION_ID)
             dialog = builder.show()
-            dialog?.getButton(DialogInterface.BUTTON_NEUTRAL)?.text = "$finishedProfiles/$totalProfiles"
+            dialog?.getButton(DialogInterface.BUTTON_NEGATIVE)?.text = "$finishedProfiles/$totalProfiles"
+            dialog?.getButton(DialogInterface.BUTTON_NEGATIVE)?.isEnabled = false
         }
 
         fun insert(profile: ProxyEntity) {
@@ -844,7 +848,8 @@ class ConfigurationFragment @JvmOverloads constructor(
     fun urlTest() {
         val test = TestDialog()
         test.dialog = test.builder.show()
-        test.dialog?.getButton(DialogInterface.BUTTON_NEUTRAL)?.isEnabled = false
+        // Disable progress button click
+        test.dialog?.getButton(DialogInterface.BUTTON_NEGATIVE)?.isEnabled = false
         val testJobs = mutableListOf<Job>()
 
         val mainJob = runOnDefaultDispatcher {
@@ -905,8 +910,8 @@ class ConfigurationFragment @JvmOverloads constructor(
                                     true
                                 )
                             }
-                            // TODO: fix l10n
-                            test.dialog?.getButton(DialogInterface.BUTTON_NEUTRAL)?.text = "$finishedProfileCount/$profileCount"
+                            // Update progress text on the negative button
+                            test.dialog?.getButton(DialogInterface.BUTTON_NEGATIVE)?.text = "$finishedProfileCount/$profileCount"
                             // Update notification if minimized
                             test.updateNotification(finishedProfileCount, profileCount)
                         }
@@ -925,7 +930,7 @@ class ConfigurationFragment @JvmOverloads constructor(
                     // Show completion notification
                     test.showCompletionNotification()
                 } else {
-                    test.dialog?.getButton(DialogInterface.BUTTON_NEGATIVE)?.setText(android.R.string.ok)
+                    test.dialog?.getButton(DialogInterface.BUTTON_POSITIVE)?.setText(android.R.string.ok)
                 }
             }
         }
