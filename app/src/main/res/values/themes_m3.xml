@@ -152,13 +152,6 @@
         <item name="cornerSize">28dp</item>
     </style>
 
-    <!-- M3 Chip Styles -->
-    <style name="Widget.M3.Chip.Filter" parent="Widget.Material3.Chip.Filter">
-        <item name="chipBackgroundColor">@color/m3_chip_background</item>
-        <item name="android:textColor">@color/m3_chip_text_color</item>
-        <item name="checkedIconVisible">false</item>
-    </style>
-
     <!-- Color theme variants -->
     <style name="Theme.M3.SagerNet.Red">
         <item name="colorPrimary">@color/m3_red_primary</item>

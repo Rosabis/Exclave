@@ -2,8 +2,8 @@
 <!-- Material Design 3 Styles -->
 <resources>
 
-    <!-- Tab Text Appearance -->
-    <style name="TabTextAppearance" parent="TextAppearance.Design.Tab">
+    <!-- Tab Text Appearance M3 -->
+    <style name="TabTextAppearance.M3" parent="TextAppearance.Design.Tab">
         <item name="textAllCaps">false</item>
     </style>
 
