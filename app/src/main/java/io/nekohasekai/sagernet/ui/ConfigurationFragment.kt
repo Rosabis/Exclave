@@ -753,10 +753,12 @@ class ConfigurationFragment @JvmOverloads constructor(
             dialog?.getButton(DialogInterface.BUTTON_NEUTRAL)?.setOnClickListener {
                 minimize()
             }
-            // Rebind the cancel button
+            // Rebind the cancel button (must dismiss explicitly: setOnClickListener replaces default dismiss)
             dialog?.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
                 close()
                 cancel()
+                dialog?.dismiss()
+                currentTestDialog = null
             }
         }
 
