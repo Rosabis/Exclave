@@ -744,6 +744,8 @@ class ConfigurationFragment @JvmOverloads constructor(
         fun restore() {
             isMinimized = false
             notificationManager.cancel(NOTIFICATION_ID)
+            // The same view was attached to the previous dialog; detach before reusing to avoid "child already has a parent"
+            (binding.root.parent as? ViewGroup)?.removeView(binding.root)
             dialog = builder.show()
             dialog?.getButton(DialogInterface.BUTTON_NEGATIVE)?.text = "$finishedProfiles/$totalProfiles"
             dialog?.getButton(DialogInterface.BUTTON_NEGATIVE)?.isEnabled = false
