@@ -4,26 +4,35 @@ import android.content.Context
 import android.util.AttributeSet
 import android.widget.EditText
 import android.widget.LinearLayout
-import androidx.core.content.res.TypedArrayUtils
 import androidx.core.view.isVisible
-import androidx.preference.EditTextPreference
+import com.takisoft.preferencex.EditTextPreference
 import io.nekohasekai.sagernet.R
 import io.nekohasekai.sagernet.database.DataStore
 
-class UrlTestPreference
-@JvmOverloads
-constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = TypedArrayUtils.getAttr(
-        context, R.attr.editTextPreferenceStyle,
-        android.R.attr.editTextPreferenceStyle
-    ),
-    defStyleRes: Int = 0
-) : EditTextPreference(context, attrs, defStyleAttr, defStyleRes) {
+class UrlTestPreference : EditTextPreference {
 
     var concurrent: EditText? = null
     var timeout: EditText? = null
+
+    constructor(context: Context) : this(context, null)
+
+    constructor(
+        context: Context,
+        attrs: AttributeSet?,
+    ) : this(context, attrs, com.takisoft.preferencex.R.attr.editTextPreferenceStyle)
+
+    constructor(
+        context: Context,
+        attrs: AttributeSet?,
+        defStyleAttr: Int,
+    ) : this(context, attrs, defStyleAttr, 0)
+
+    constructor(
+        context: Context,
+        attrs: AttributeSet?,
+        defStyleAttr: Int,
+        defStyleRes: Int,
+    ) : super(context, attrs, defStyleAttr, defStyleRes)
 
     init {
         dialogLayoutResource = R.layout.layout_urltest_preference_dialog
