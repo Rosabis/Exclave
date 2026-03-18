@@ -222,6 +222,12 @@ class MainActivity : ThemedActivity(),
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
 
+        // Handle URL test dialog restore from notification
+        if (intent.getBooleanExtra("restore_url_test", false)) {
+            ConfigurationFragment.TestDialogConstants.restoreTestDialog()
+            return
+        }
+
         val uri = intent.data ?: return
 
         runOnDefaultDispatcher {

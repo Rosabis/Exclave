@@ -654,6 +654,11 @@ class ConfigurationFragment @JvmOverloads constructor(
     companion object TestDialogConstants {
         const val NOTIFICATION_CHANNEL_ID = "url_test_channel"
         const val NOTIFICATION_ID = 1001
+        var currentTestDialog: TestDialog? = null
+        
+        fun restoreTestDialog() {
+            currentTestDialog?.restore()
+        }
     }
 
     inner class TestDialog {
@@ -742,6 +747,15 @@ class ConfigurationFragment @JvmOverloads constructor(
             dialog = builder.show()
             dialog?.getButton(DialogInterface.BUTTON_NEGATIVE)?.text = "$finishedProfiles/$totalProfiles"
             dialog?.getButton(DialogInterface.BUTTON_NEGATIVE)?.isEnabled = false
+            // Rebind the minimize button
+            dialog?.getButton(DialogInterface.BUTTON_NEUTRAL)?.setOnClickListener {
+                minimize()
+            }
+            // Rebind the cancel button
+            dialog?.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
+                close()
+                cancel()
+            }
         }
 
         fun insert(profile: ProxyEntity) {
@@ -844,9 +858,10 @@ class ConfigurationFragment @JvmOverloads constructor(
 
     }
 
-    @Suppress("EXPERIMENTAL_API_USAGE")
+    @Suppress("EXcerimental_API_USAGE")
     fun urlTest() {
         val test = TestDialog()
+        currentTestDialog = test
         test.dialog = test.builder.show()
         // Disable progress button click
         test.dialog?.getButton(DialogInterface.BUTTON_NEGATIVE)?.isEnabled = false
