@@ -1,0 +1,872 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Design 3 Themes -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Base M3 Theme -->
+    <style name="Theme.M3.SagerNet" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Primary colors -->
+        <item name="colorPrimary">@color/m3_pink_primary</item>
+        <item name="colorOnPrimary">@color/m3_pink_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_pink_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_pink_onPrimaryContainer</item>
+        
+        <!-- Secondary colors -->
+        <item name="colorSecondary">@color/m3_pink_secondary</item>
+        <item name="colorOnSecondary">@color/m3_pink_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_pink_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_pink_onSecondaryContainer</item>
+        
+        <!-- Tertiary colors -->
+        <item name="colorTertiary">@color/m3_pink_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_pink_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_pink_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_pink_onTertiaryContainer</item>
+        
+        <!-- Error colors -->
+        <item name="colorError">@color/m3_error</item>
+        <item name="colorOnError">@color/m3_onError</item>
+        <item name="colorErrorContainer">@color/m3_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/m3_onErrorContainer</item>
+        
+        <!-- Background and Surface colors -->
+        <item name="android:colorBackground">@color/m3_pink_background</item>
+        <item name="colorOnBackground">@color/m3_pink_onBackground</item>
+        <item name="colorSurface">@color/m3_pink_surface</item>
+        <item name="colorOnSurface">@color/m3_pink_onSurface</item>
+        <item name="colorSurfaceVariant">@color/m3_pink_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/m3_pink_onSurfaceVariant</item>
+        
+        <!-- Outline -->
+        <item name="colorOutline">@color/m3_pink_outline</item>
+        <item name="colorOutlineVariant">@color/m3_pink_outlineVariant</item>
+        
+        <!-- Inverse colors -->
+        <item name="colorInverseSurface">@color/m3_pink_inverseSurface</item>
+        <item name="colorInverseOnSurface">@color/m3_pink_inverseOnSurface</item>
+        <item name="colorInversePrimary">@color/m3_pink_inversePrimary</item>
+        
+        <!-- Surface container levels -->
+        <item name="colorSurfaceDim">@color/m3_pink_surfaceDim</item>
+        <item name="colorSurfaceBright">@color/m3_pink_surfaceBright</item>
+        <item name="colorSurfaceContainerLowest">@color/m3_pink_surfaceContainerLowest</item>
+        <item name="colorSurfaceContainerLow">@color/m3_pink_surfaceContainerLow</item>
+        <item name="colorSurfaceContainer">@color/m3_pink_surfaceContainer</item>
+        <item name="colorSurfaceContainerHigh">@color/m3_pink_surfaceContainerHigh</item>
+        <item name="colorSurfaceContainerHighest">@color/m3_pink_surfaceContainerHighest</item>
+
+        <!-- Legacy compatibility -->
+        <item name="colorPrimaryDark">@color/m3_pink_primary</item>
+        <item name="colorAccent">@color/m3_pink_primary</item>
+        <item name="colorMaterial100">@color/m3_pink_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_pink_primary</item>
+        
+        <!-- Custom attributes -->
+        <item name="accentOrTextSecondary">@color/m3_pink_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_pink_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_pink_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_pink_primary</item>
+        <item name="fabColorBackground">@color/m3_pink_primary</item>
+        <item name="selectedColorPrimary">@color/m3_pink_primary</item>
+        <item name="whiteOrTextPrimary">@color/white</item>
+        
+        <!-- Navigation bar -->
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        
+        <!-- Action bar -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionModeOverlay">true</item>
+        
+        <!-- Dialog theme -->
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.M3.MaterialAlertDialog</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.M3.MaterialAlertDialog</item>
+        
+        <!-- Chip style -->
+        <item name="chipStyle">@style/Widget.M3.Chip.Filter</item>
+        
+        <!-- Shape appearance -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.M3.SmallComponent</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.M3.MediumComponent</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.M3.LargeComponent</item>
+    </style>
+
+    <!-- M3 Dialog Theme -->
+    <style name="Theme.M3.SagerNet.Dialog" parent="Theme.Material3.DayNight.Dialog.Alert">
+        <item name="colorPrimary">@color/m3_pink_primary</item>
+        <item name="colorOnPrimary">@color/m3_pink_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_pink_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_pink_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_pink_secondary</item>
+        <item name="colorOnSecondary">@color/m3_pink_onSecondary</item>
+        <item name="colorError">@color/m3_error</item>
+        <item name="colorOnError">@color/m3_onError</item>
+        <item name="android:colorBackground">@color/m3_pink_background</item>
+        <item name="colorOnBackground">@color/m3_pink_onBackground</item>
+        <item name="colorSurface">@color/m3_pink_surface</item>
+        <item name="colorOnSurface">@color/m3_pink_onSurface</item>
+        <item name="colorSurfaceVariant">@color/m3_pink_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/m3_pink_onSurfaceVariant</item>
+        
+        <item name="colorPrimaryDark">@color/m3_pink_primary</item>
+        <item name="colorAccent">@color/m3_pink_primary</item>
+        <item name="colorMaterial100">@color/m3_pink_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_pink_primary</item>
+        
+        <item name="accentOrTextSecondary">@color/m3_pink_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_pink_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_pink_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_pink_primary</item>
+        <item name="fabColorBackground">@color/m3_pink_primary</item>
+        <item name="selectedColorPrimary">@color/m3_pink_primary</item>
+        <item name="whiteOrTextPrimary">@color/white</item>
+        
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowFixedHeightMajor" type="dimen">95%</item>
+        
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.M3.MaterialAlertDialog</item>
+    </style>
+
+    <!-- M3 Alert Dialog Theme Overlay -->
+    <style name="ThemeOverlay.M3.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="dialogCornerRadius">28dp</item>
+        <item name="colorSurface">@color/m3_pink_surface</item>
+    </style>
+
+    <!-- M3 Shape Appearances -->
+    <style name="ShapeAppearance.M3.SmallComponent" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+
+    <style name="ShapeAppearance.M3.MediumComponent" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <style name="ShapeAppearance.M3.LargeComponent" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">28dp</item>
+    </style>
+
+    <!-- M3 Chip Styles -->
+    <style name="Widget.M3.Chip.Filter" parent="Widget.Material3.Chip.Filter">
+        <item name="chipBackgroundColor">@color/m3_chip_background</item>
+        <item name="android:textColor">@color/m3_chip_text_color</item>
+        <item name="checkedIconVisible">false</item>
+    </style>
+
+    <!-- Color theme variants -->
+    <style name="Theme.M3.SagerNet.Red">
+        <item name="colorPrimary">@color/m3_red_primary</item>
+        <item name="colorOnPrimary">@color/m3_red_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_red_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_red_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_red_secondary</item>
+        <item name="colorOnSecondary">@color/m3_red_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_red_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_red_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_red_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_red_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_red_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_red_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_red_primary</item>
+        <item name="colorAccent">@color/m3_red_primary</item>
+        <item name="colorMaterial100">@color/m3_red_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_red_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_red_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_red_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_red_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_red_primary</item>
+        <item name="fabColorBackground">@color/m3_red_primary</item>
+        <item name="selectedColorPrimary">@color/m3_red_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Purple">
+        <item name="colorPrimary">@color/m3_purple_primary</item>
+        <item name="colorOnPrimary">@color/m3_purple_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_purple_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_purple_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_purple_secondary</item>
+        <item name="colorOnSecondary">@color/m3_purple_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_purple_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_purple_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_purple_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_purple_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_purple_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_purple_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_purple_primary</item>
+        <item name="colorAccent">@color/m3_purple_primary</item>
+        <item name="colorMaterial100">@color/m3_purple_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_purple_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_purple_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_purple_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_purple_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_purple_primary</item>
+        <item name="fabColorBackground">@color/m3_purple_primary</item>
+        <item name="selectedColorPrimary">@color/m3_purple_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.DeepPurple">
+        <item name="colorPrimary">@color/m3_deep_purple_primary</item>
+        <item name="colorOnPrimary">@color/m3_deep_purple_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_deep_purple_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_deep_purple_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_deep_purple_secondary</item>
+        <item name="colorOnSecondary">@color/m3_deep_purple_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_deep_purple_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_deep_purple_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_deep_purple_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_deep_purple_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_deep_purple_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_deep_purple_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_deep_purple_primary</item>
+        <item name="colorAccent">@color/m3_deep_purple_primary</item>
+        <item name="colorMaterial100">@color/m3_deep_purple_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_deep_purple_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_deep_purple_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_deep_purple_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_deep_purple_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_deep_purple_primary</item>
+        <item name="fabColorBackground">@color/m3_deep_purple_primary</item>
+        <item name="selectedColorPrimary">@color/m3_deep_purple_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Indigo">
+        <item name="colorPrimary">@color/m3_indigo_primary</item>
+        <item name="colorOnPrimary">@color/m3_indigo_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_indigo_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_indigo_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_indigo_secondary</item>
+        <item name="colorOnSecondary">@color/m3_indigo_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_indigo_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_indigo_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_indigo_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_indigo_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_indigo_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_indigo_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_indigo_primary</item>
+        <item name="colorAccent">@color/m3_indigo_primary</item>
+        <item name="colorMaterial100">@color/m3_indigo_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_indigo_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_indigo_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_indigo_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_indigo_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_indigo_primary</item>
+        <item name="fabColorBackground">@color/m3_indigo_primary</item>
+        <item name="selectedColorPrimary">@color/m3_indigo_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Blue">
+        <item name="colorPrimary">@color/m3_blue_primary</item>
+        <item name="colorOnPrimary">@color/m3_blue_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_blue_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_blue_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_blue_secondary</item>
+        <item name="colorOnSecondary">@color/m3_blue_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_blue_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_blue_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_blue_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_blue_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_blue_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_blue_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_blue_primary</item>
+        <item name="colorAccent">@color/m3_blue_primary</item>
+        <item name="colorMaterial100">@color/m3_blue_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_blue_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_blue_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_blue_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_blue_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_blue_primary</item>
+        <item name="fabColorBackground">@color/m3_blue_primary</item>
+        <item name="selectedColorPrimary">@color/m3_blue_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.LightBlue">
+        <item name="colorPrimary">@color/m3_light_blue_primary</item>
+        <item name="colorOnPrimary">@color/m3_light_blue_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_light_blue_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_light_blue_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_light_blue_secondary</item>
+        <item name="colorOnSecondary">@color/m3_light_blue_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_light_blue_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_light_blue_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_light_blue_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_light_blue_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_light_blue_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_light_blue_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_light_blue_primary</item>
+        <item name="colorAccent">@color/m3_light_blue_primary</item>
+        <item name="colorMaterial100">@color/m3_light_blue_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_light_blue_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_light_blue_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_light_blue_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_light_blue_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_light_blue_primary</item>
+        <item name="fabColorBackground">@color/m3_light_blue_primary</item>
+        <item name="selectedColorPrimary">@color/m3_light_blue_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Cyan">
+        <item name="colorPrimary">@color/m3_cyan_primary</item>
+        <item name="colorOnPrimary">@color/m3_cyan_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_cyan_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_cyan_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_cyan_secondary</item>
+        <item name="colorOnSecondary">@color/m3_cyan_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_cyan_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_cyan_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_cyan_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_cyan_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_cyan_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_cyan_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_cyan_primary</item>
+        <item name="colorAccent">@color/m3_cyan_primary</item>
+        <item name="colorMaterial100">@color/m3_cyan_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_cyan_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_cyan_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_cyan_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_cyan_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_cyan_primary</item>
+        <item name="fabColorBackground">@color/m3_cyan_primary</item>
+        <item name="selectedColorPrimary">@color/m3_cyan_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Teal">
+        <item name="colorPrimary">@color/m3_teal_primary</item>
+        <item name="colorOnPrimary">@color/m3_teal_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_teal_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_teal_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_teal_secondary</item>
+        <item name="colorOnSecondary">@color/m3_teal_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_teal_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_teal_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_teal_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_teal_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_teal_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_teal_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_teal_primary</item>
+        <item name="colorAccent">@color/m3_teal_primary</item>
+        <item name="colorMaterial100">@color/m3_teal_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_teal_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_teal_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_teal_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_teal_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_teal_primary</item>
+        <item name="fabColorBackground">@color/m3_teal_primary</item>
+        <item name="selectedColorPrimary">@color/m3_teal_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Green">
+        <item name="colorPrimary">@color/m3_green_primary</item>
+        <item name="colorOnPrimary">@color/m3_green_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_green_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_green_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_green_secondary</item>
+        <item name="colorOnSecondary">@color/m3_green_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_green_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_green_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_green_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_green_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_green_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_green_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_green_primary</item>
+        <item name="colorAccent">@color/m3_green_primary</item>
+        <item name="colorMaterial100">@color/m3_green_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_green_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_green_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_green_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_green_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_green_primary</item>
+        <item name="fabColorBackground">@color/m3_green_primary</item>
+        <item name="selectedColorPrimary">@color/m3_green_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.LightGreen">
+        <item name="colorPrimary">@color/m3_light_green_primary</item>
+        <item name="colorOnPrimary">@color/m3_light_green_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_light_green_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_light_green_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_light_green_secondary</item>
+        <item name="colorOnSecondary">@color/m3_light_green_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_light_green_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_light_green_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_light_green_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_light_green_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_light_green_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_light_green_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_light_green_primary</item>
+        <item name="colorAccent">@color/m3_light_green_primary</item>
+        <item name="colorMaterial100">@color/m3_light_green_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_light_green_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_light_green_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_light_green_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_light_green_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_light_green_primary</item>
+        <item name="fabColorBackground">@color/m3_light_green_primary</item>
+        <item name="selectedColorPrimary">@color/m3_light_green_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Lime">
+        <item name="colorPrimary">@color/m3_lime_primary</item>
+        <item name="colorOnPrimary">@color/m3_lime_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_lime_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_lime_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_lime_secondary</item>
+        <item name="colorOnSecondary">@color/m3_lime_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_lime_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_lime_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_lime_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_lime_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_lime_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_lime_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_lime_primary</item>
+        <item name="colorAccent">@color/m3_lime_primary</item>
+        <item name="colorMaterial100">@color/m3_lime_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_lime_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_lime_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_lime_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_lime_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_lime_primary</item>
+        <item name="fabColorBackground">@color/m3_lime_primary</item>
+        <item name="selectedColorPrimary">@color/m3_lime_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Yellow">
+        <item name="colorPrimary">@color/m3_yellow_primary</item>
+        <item name="colorOnPrimary">@color/m3_yellow_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_yellow_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_yellow_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_yellow_secondary</item>
+        <item name="colorOnSecondary">@color/m3_yellow_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_yellow_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_yellow_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_yellow_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_yellow_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_yellow_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_yellow_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_yellow_primary</item>
+        <item name="colorAccent">@color/m3_yellow_primary</item>
+        <item name="colorMaterial100">@color/m3_yellow_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_yellow_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_yellow_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_yellow_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_yellow_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_yellow_primary</item>
+        <item name="fabColorBackground">@color/m3_yellow_primary</item>
+        <item name="selectedColorPrimary">@color/m3_yellow_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Amber">
+        <item name="colorPrimary">@color/m3_amber_primary</item>
+        <item name="colorOnPrimary">@color/m3_amber_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_amber_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_amber_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_amber_secondary</item>
+        <item name="colorOnSecondary">@color/m3_amber_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_amber_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_amber_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_amber_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_amber_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_amber_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_amber_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_amber_primary</item>
+        <item name="colorAccent">@color/m3_amber_primary</item>
+        <item name="colorMaterial100">@color/m3_amber_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_amber_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_amber_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_amber_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_amber_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_amber_primary</item>
+        <item name="fabColorBackground">@color/m3_amber_primary</item>
+        <item name="selectedColorPrimary">@color/m3_amber_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Orange">
+        <item name="colorPrimary">@color/m3_orange_primary</item>
+        <item name="colorOnPrimary">@color/m3_orange_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_orange_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_orange_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_orange_secondary</item>
+        <item name="colorOnSecondary">@color/m3_orange_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_orange_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_orange_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_orange_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_orange_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_orange_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_orange_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_orange_primary</item>
+        <item name="colorAccent">@color/m3_orange_primary</item>
+        <item name="colorMaterial100">@color/m3_orange_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_orange_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_orange_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_orange_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_orange_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_orange_primary</item>
+        <item name="fabColorBackground">@color/m3_orange_primary</item>
+        <item name="selectedColorPrimary">@color/m3_orange_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.DeepOrange">
+        <item name="colorPrimary">@color/m3_deep_orange_primary</item>
+        <item name="colorOnPrimary">@color/m3_deep_orange_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_deep_orange_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_deep_orange_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_deep_orange_secondary</item>
+        <item name="colorOnSecondary">@color/m3_deep_orange_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_deep_orange_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_deep_orange_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_deep_orange_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_deep_orange_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_deep_orange_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_deep_orange_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_deep_orange_primary</item>
+        <item name="colorAccent">@color/m3_deep_orange_primary</item>
+        <item name="colorMaterial100">@color/m3_deep_orange_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_deep_orange_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_deep_orange_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_deep_orange_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_deep_orange_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_deep_orange_primary</item>
+        <item name="fabColorBackground">@color/m3_deep_orange_primary</item>
+        <item name="selectedColorPrimary">@color/m3_deep_orange_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Brown">
+        <item name="colorPrimary">@color/m3_brown_primary</item>
+        <item name="colorOnPrimary">@color/m3_brown_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_brown_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_brown_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_brown_secondary</item>
+        <item name="colorOnSecondary">@color/m3_brown_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_brown_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_brown_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_brown_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_brown_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_brown_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_brown_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_brown_primary</item>
+        <item name="colorAccent">@color/m3_brown_primary</item>
+        <item name="colorMaterial100">@color/m3_brown_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_brown_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_brown_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_brown_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_brown_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_brown_primary</item>
+        <item name="fabColorBackground">@color/m3_brown_primary</item>
+        <item name="selectedColorPrimary">@color/m3_brown_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Grey">
+        <item name="colorPrimary">@color/m3_grey_primary</item>
+        <item name="colorOnPrimary">@color/m3_grey_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_grey_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_grey_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_grey_secondary</item>
+        <item name="colorOnSecondary">@color/m3_grey_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_grey_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_grey_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_grey_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_grey_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_grey_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_grey_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_grey_primary</item>
+        <item name="colorAccent">@color/m3_grey_primary</item>
+        <item name="colorMaterial100">@color/m3_grey_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_grey_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_grey_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_grey_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_grey_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_grey_primary</item>
+        <item name="fabColorBackground">@color/m3_grey_primary</item>
+        <item name="selectedColorPrimary">@color/m3_grey_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.BlueGrey">
+        <item name="colorPrimary">@color/m3_blue_grey_primary</item>
+        <item name="colorOnPrimary">@color/m3_blue_grey_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_blue_grey_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_blue_grey_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_blue_grey_secondary</item>
+        <item name="colorOnSecondary">@color/m3_blue_grey_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_blue_grey_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_blue_grey_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_blue_grey_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_blue_grey_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_blue_grey_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_blue_grey_onTertiaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_blue_grey_primary</item>
+        <item name="colorAccent">@color/m3_blue_grey_primary</item>
+        <item name="colorMaterial100">@color/m3_blue_grey_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_blue_grey_primary</item>
+        <item name="accentOrTextSecondary">@color/m3_blue_grey_primary</item>
+        <item name="accentOrTextPrimary">@color/m3_blue_grey_primary</item>
+        <item name="primaryOrTextSecondary">@color/m3_blue_grey_primary</item>
+        <item name="primaryOrTextPrimary">@color/m3_blue_grey_primary</item>
+        <item name="fabColorBackground">@color/m3_blue_grey_primary</item>
+        <item name="selectedColorPrimary">@color/m3_blue_grey_primary</item>
+    </style>
+
+    <!-- Black Theme (AMOLED) -->
+    <style name="Theme.M3.SagerNet.Black">
+        <item name="colorPrimary">@color/m3_black_primary</item>
+        <item name="colorOnPrimary">@color/m3_black_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_black_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_black_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_black_secondary</item>
+        <item name="colorOnSecondary">@color/m3_black_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_black_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_black_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/m3_black_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_black_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_black_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/m3_black_onTertiaryContainer</item>
+        <item name="android:colorBackground">@color/m3_black_background</item>
+        <item name="colorOnBackground">@color/m3_black_onBackground</item>
+        <item name="colorSurface">@color/m3_black_surface</item>
+        <item name="colorOnSurface">@color/m3_black_onSurface</item>
+        <item name="colorSurfaceVariant">@color/m3_black_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/m3_black_onSurfaceVariant</item>
+        <item name="colorOutline">@color/m3_black_outline</item>
+        <item name="colorOutlineVariant">@color/m3_black_outlineVariant</item>
+        <item name="colorPrimaryDark">@color/black</item>
+        <item name="colorAccent">@color/m3_black_primary</item>
+        <item name="colorMaterial100">@color/m3_black_primaryContainer</item>
+        <item name="colorMaterial300">@color/m3_black_primary</item>
+        <item name="accentOrTextSecondary">?android:textColorSecondary</item>
+        <item name="accentOrTextPrimary">?android:textColorPrimary</item>
+        <item name="primaryOrTextSecondary">?android:textColorSecondary</item>
+        <item name="primaryOrTextPrimary">?android:textColorPrimary</item>
+        <item name="fabColorBackground">@color/m3_black_primaryContainer</item>
+        <item name="selectedColorPrimary">@color/m3_black_primary</item>
+    </style>
+
+    <!-- Dynamic Colors Theme (Android 12+) -->
+    <style name="Theme.M3.SagerNet.Dynamic" parent="Theme.Material3.DynamicColors.DayNight">
+        <item name="colorPrimaryDark">?colorPrimary</item>
+        <item name="colorAccent">?colorPrimary</item>
+        <item name="colorMaterial100">?colorPrimaryContainer</item>
+        <item name="colorMaterial300">?colorPrimary</item>
+        <item name="accentOrTextSecondary">?colorPrimary</item>
+        <item name="accentOrTextPrimary">?colorPrimary</item>
+        <item name="primaryOrTextSecondary">?colorPrimary</item>
+        <item name="primaryOrTextPrimary">?colorPrimary</item>
+        <item name="fabColorBackground">?colorPrimary</item>
+        <item name="selectedColorPrimary">?colorPrimary</item>
+        <item name="whiteOrTextPrimary">@color/white</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Material3.MaterialAlertDialog</item>
+    </style>
+
+    <!-- Dialog Theme Variants -->
+    <style name="Theme.M3.SagerNet.Dialog.Red">
+        <item name="colorPrimary">@color/m3_red_primary</item>
+        <item name="colorOnPrimary">@color/m3_red_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_red_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_red_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_red_primary</item>
+        <item name="colorAccent">@color/m3_red_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.Purple">
+        <item name="colorPrimary">@color/m3_purple_primary</item>
+        <item name="colorOnPrimary">@color/m3_purple_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_purple_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_purple_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_purple_primary</item>
+        <item name="colorAccent">@color/m3_purple_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.DeepPurple">
+        <item name="colorPrimary">@color/m3_deep_purple_primary</item>
+        <item name="colorOnPrimary">@color/m3_deep_purple_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_deep_purple_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_deep_purple_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_deep_purple_primary</item>
+        <item name="colorAccent">@color/m3_deep_purple_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.Indigo">
+        <item name="colorPrimary">@color/m3_indigo_primary</item>
+        <item name="colorOnPrimary">@color/m3_indigo_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_indigo_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_indigo_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_indigo_primary</item>
+        <item name="colorAccent">@color/m3_indigo_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.Blue">
+        <item name="colorPrimary">@color/m3_blue_primary</item>
+        <item name="colorOnPrimary">@color/m3_blue_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_blue_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_blue_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_blue_primary</item>
+        <item name="colorAccent">@color/m3_blue_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.LightBlue">
+        <item name="colorPrimary">@color/m3_light_blue_primary</item>
+        <item name="colorOnPrimary">@color/m3_light_blue_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_light_blue_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_light_blue_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_light_blue_primary</item>
+        <item name="colorAccent">@color/m3_light_blue_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.Cyan">
+        <item name="colorPrimary">@color/m3_cyan_primary</item>
+        <item name="colorOnPrimary">@color/m3_cyan_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_cyan_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_cyan_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_cyan_primary</item>
+        <item name="colorAccent">@color/m3_cyan_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.Teal">
+        <item name="colorPrimary">@color/m3_teal_primary</item>
+        <item name="colorOnPrimary">@color/m3_teal_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_teal_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_teal_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_teal_primary</item>
+        <item name="colorAccent">@color/m3_teal_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.Green">
+        <item name="colorPrimary">@color/m3_green_primary</item>
+        <item name="colorOnPrimary">@color/m3_green_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_green_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_green_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_green_primary</item>
+        <item name="colorAccent">@color/m3_green_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.LightGreen">
+        <item name="colorPrimary">@color/m3_light_green_primary</item>
+        <item name="colorOnPrimary">@color/m3_light_green_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_light_green_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_light_green_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_light_green_primary</item>
+        <item name="colorAccent">@color/m3_light_green_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.Lime">
+        <item name="colorPrimary">@color/m3_lime_primary</item>
+        <item name="colorOnPrimary">@color/m3_lime_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_lime_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_lime_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_lime_primary</item>
+        <item name="colorAccent">@color/m3_lime_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.Yellow">
+        <item name="colorPrimary">@color/m3_yellow_primary</item>
+        <item name="colorOnPrimary">@color/m3_yellow_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_yellow_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_yellow_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_yellow_primary</item>
+        <item name="colorAccent">@color/m3_yellow_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.Amber">
+        <item name="colorPrimary">@color/m3_amber_primary</item>
+        <item name="colorOnPrimary">@color/m3_amber_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_amber_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_amber_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_amber_primary</item>
+        <item name="colorAccent">@color/m3_amber_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.Orange">
+        <item name="colorPrimary">@color/m3_orange_primary</item>
+        <item name="colorOnPrimary">@color/m3_orange_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_orange_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_orange_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_orange_primary</item>
+        <item name="colorAccent">@color/m3_orange_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.DeepOrange">
+        <item name="colorPrimary">@color/m3_deep_orange_primary</item>
+        <item name="colorOnPrimary">@color/m3_deep_orange_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_deep_orange_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_deep_orange_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_deep_orange_primary</item>
+        <item name="colorAccent">@color/m3_deep_orange_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.Brown">
+        <item name="colorPrimary">@color/m3_brown_primary</item>
+        <item name="colorOnPrimary">@color/m3_brown_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_brown_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_brown_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_brown_primary</item>
+        <item name="colorAccent">@color/m3_brown_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.Grey">
+        <item name="colorPrimary">@color/m3_grey_primary</item>
+        <item name="colorOnPrimary">@color/m3_grey_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_grey_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_grey_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_grey_primary</item>
+        <item name="colorAccent">@color/m3_grey_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.BlueGrey">
+        <item name="colorPrimary">@color/m3_blue_grey_primary</item>
+        <item name="colorOnPrimary">@color/m3_blue_grey_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_blue_grey_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_blue_grey_onPrimaryContainer</item>
+        <item name="colorPrimaryDark">@color/m3_blue_grey_primary</item>
+        <item name="colorAccent">@color/m3_blue_grey_primary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.Black">
+        <item name="colorPrimary">@color/m3_black_primary</item>
+        <item name="colorOnPrimary">@color/m3_black_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_black_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_black_onPrimaryContainer</item>
+        <item name="android:colorBackground">@color/m3_black_background</item>
+        <item name="colorOnBackground">@color/m3_black_onBackground</item>
+        <item name="colorSurface">@color/m3_black_surface</item>
+        <item name="colorOnSurface">@color/m3_black_onSurface</item>
+        <item name="colorPrimaryDark">@color/black</item>
+        <item name="colorAccent">@color/m3_black_primary</item>
+        <item name="accentOrTextSecondary">?android:textColorSecondary</item>
+        <item name="accentOrTextPrimary">?android:textColorPrimary</item>
+        <item name="primaryOrTextSecondary">?android:textColorSecondary</item>
+        <item name="primaryOrTextPrimary">?android:textColorPrimary</item>
+    </style>
+
+    <style name="Theme.M3.SagerNet.Dialog.Dynamic" parent="Theme.Material3.DynamicColors.DayNight.Dialog.Alert">
+        <item name="colorPrimaryDark">?colorPrimary</item>
+        <item name="colorAccent">?colorPrimary</item>
+        <item name="colorMaterial100">?colorPrimaryContainer</item>
+        <item name="colorMaterial300">?colorPrimary</item>
+        <item name="accentOrTextSecondary">?colorPrimary</item>
+        <item name="accentOrTextPrimary">?colorPrimary</item>
+        <item name="primaryOrTextSecondary">?colorPrimary</item>
+        <item name="primaryOrTextPrimary">?colorPrimary</item>
+        <item name="windowFixedHeightMajor" type="dimen">95%</item>
+    </style>
+
+    <!-- Splash Theme -->
+    <style name="Theme.M3.SagerNet.Start" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="colorPrimary">@android:color/transparent</item>
+        <item name="colorPrimaryDark">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+</resources>

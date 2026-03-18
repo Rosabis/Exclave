@@ -33,6 +33,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.color.DynamicColors
 import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.R
 import io.nekohasekai.sagernet.utils.Theme
@@ -52,6 +53,11 @@ abstract class ThemedActivity : AppCompatActivity {
     var uiMode = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Apply Material3 dynamic colors for Android 12+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && DataStore.appTheme == Theme.DYNAMIC) {
+            DynamicColors.applyToActivityIfAvailable(this)
+        }
+        
         when (type) {
             Type.Default -> {
                 Theme.apply(this)

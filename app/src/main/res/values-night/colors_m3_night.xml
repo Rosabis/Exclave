@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Design 3 Dark Colors -->
+<resources>
+    <!-- M3 Pink Dark Theme -->
+    <color name="m3_pink_primary">#FFB1C4</color>
+    <color name="m3_pink_onPrimary">#5F112C</color>
+    <color name="m3_pink_primaryContainer">#7A2944</color>
+    <color name="m3_pink_onPrimaryContainer">#FFD9E3</color>
+    <color name="m3_pink_secondary">#E3BDC5</color>
+    <color name="m3_pink_onSecondary">#44292F</color>
+    <color name="m3_pink_secondaryContainer">#5D3F46</color>
+    <color name="m3_pink_onSecondaryContainer">#FFD9E3</color>
+    <color name="m3_pink_tertiary">#F1BC97</color>
+    <color name="m3_pink_onTertiary">#472A0E</color>
+    <color name="m3_pink_tertiaryContainer">#614023</color>
+    <color name="m3_pink_onTertiaryContainer">#FFDCC1</color>
+    <color name="m3_pink_error">#FFB4AB</color>
+    <color name="m3_pink_onError">#690005</color>
+    <color name="m3_pink_errorContainer">#93000A</color>
+    <color name="m3_pink_onErrorContainer">#FFDAD6</color>
+    <color name="m3_pink_background">#1A1114</color>
+    <color name="m3_pink_onBackground">#EEDFE2</color>
+    <color name="m3_pink_surface">#1A1114</color>
+    <color name="m3_pink_onSurface">#EEDFE2</color>
+    <color name="m3_pink_surfaceVariant">#514347</color>
+    <color name="m3_pink_onSurfaceVariant">#D6C2C6</color>
+    <color name="m3_pink_outline">#9F8C90</color>
+    <color name="m3_pink_outlineVariant">#514347</color>
+    <color name="m3_pink_inverseSurface">#FAEEF0</color>
+    <color name="m3_pink_inverseOnSurface">#201A1C</color>
+    <color name="m3_pink_inversePrimary">#AD2457</color>
+    <color name="m3_pink_surfaceDim">#1A1114</color>
+    <color name="m3_pink_surfaceBright">#42373A</color>
+    <color name="m3_pink_surfaceContainerLowest">#140C0F</color>
+    <color name="m3_pink_surfaceContainerLow">#221A1D</color>
+    <color name="m3_pink_surfaceContainer">#261F21</color>
+    <color name="m3_pink_surfaceContainerHigh">#312A2C</color>
+    <color name="m3_pink_surfaceContainerHighest">#3C3437</color>
+
+    <!-- M3 Error Dark -->
+    <color name="m3_error">#FFB4AB</color>
+    <color name="m3_onError">#690005</color>
+    <color name="m3_errorContainer">#93000A</color>
+    <color name="m3_onErrorContainer">#FFDAD6</color>
+</resources>
