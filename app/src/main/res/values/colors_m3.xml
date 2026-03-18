@@ -198,7 +198,7 @@
     <color name="m3_yellow_onPrimaryContainer">#201C00</color>
     <color name="m3_yellow_secondary">#665D40</color>
     <color name="m3_yellow_onSecondary">#FFFFFF</color>
-    <color name="m3_yellow_secondaryContainer:#EDE1BB</color>
+    <color name="m3_yellow_secondaryContainer">#EDE1BB</color>
     <color name="m3_yellow_onSecondaryContainer">#211B04</color>
     <color name="m3_yellow_tertiary">#42664E</color>
     <color name="m3_yellow_onTertiary">#FFFFFF</color>
@@ -216,7 +216,7 @@
     <color name="m3_amber_onSecondaryContainer">#261A04</color>
     <color name="m3_amber_tertiary">#4B6548</color>
     <color name="m3_amber_onTertiary">#FFFFFF</color>
-    <color name="m3_amber_tertiaryContainer:#CDEBC4</color>
+    <color name="m3_amber_tertiaryContainer">#CDEBC4</color>
     <color name="m3_amber_onTertiaryContainer">#092009</color>
 
     <!-- M3 Orange Theme -->
@@ -245,7 +245,7 @@
     <color name="m3_deep_orange_tertiary">#695F2F</color>
     <color name="m3_deep_orange_onTertiary">#FFFFFF</color>
     <color name="m3_deep_orange_tertiaryContainer">#F2E287</color>
-    <color name="m3_deep_orange_onTertiaryContainer:#201C00</color>
+    <color name="m3_deep_orange_onTertiaryContainer">#201C00</color>
 
     <!-- M3 Brown Theme -->
     <color name="m3_brown_primary">#77574A</color>
@@ -258,8 +258,8 @@
     <color name="m3_brown_onSecondaryContainer">#281A10</color>
     <color name="m3_brown_tertiary">#5D6236</color>
     <color name="m3_brown_onTertiary">#FFFFFF</color>
-    <color name="m3_brown_tertiaryContainer:#E0E8AF</color>
-    <color name="m3_brown_onTertiaryContainer:#1A1E00</color>
+    <color name="m3_brown_tertiaryContainer">#E0E8AF</color>
+    <color name="m3_brown_onTertiaryContainer">#1A1E00</color>
 
     <!-- M3 Grey Theme -->
     <color name="m3_grey_primary">#5F5F5F</color>
@@ -286,8 +286,8 @@
     <color name="m3_blue_grey_onSecondaryContainer">#121C2C</color>
     <color name="m3_blue_grey_tertiary">#615777</color>
     <color name="m3_blue_grey_onTertiary">#FFFFFF</color>
-    <color name="m3_blue_grey_tertiaryContainer:#E9DDFF</color>
-    <color name="m3_blue_grey_onTertiaryContainer:#1D1435</color>
+    <color name="m3_blue_grey_tertiaryContainer">#E9DDFF</color>
+    <color name="m3_blue_grey_onTertiaryContainer">#1D1435</color>
 
     <!-- M3 Black Theme (Dark) -->
     <color name="m3_black_primary">#E4E4E4</color>
