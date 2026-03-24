@@ -740,6 +740,8 @@ public class V2RayConfig {
         public String timeout;
         public String redirect;
         public Integer userLevel;
+        // SagerNet private
+        public Boolean interruptConnections;
 
     }
 
@@ -1282,8 +1284,12 @@ public class V2RayConfig {
     public static class GrpcObject {
 
         public String serviceName;
-        public Boolean serviceNameCompat;
+        public Integer idle_timeout;
+        public Integer health_check_timeout;
+        public Boolean permit_without_stream;
+        public Integer initial_windows_size;
         public Boolean multiMode;
+        public Boolean serviceNameCompat;
 
     }
 
