@@ -143,23 +143,16 @@ class GroupFragment : ToolbarFragment(R.layout.layout_group),
                 startActivity(Intent(context, GroupSettingsActivity::class.java))
             }
             R.id.action_update_all_subscriptions -> {
+                val connected = SagerNet.started && DataStore.startedProfile > 0
                 MaterialAlertDialogBuilder(requireContext())
                     .setTitle(R.string.update_all_subscriptions)
                     .setPositiveButton(android.R.string.ok) { _, _ ->
-                        val subscriptions = SagerDatabase.groupDao.allGroups().filter { it.type == GroupType.SUBSCRIPTION }
-                        val connected = SagerNet.started && DataStore.startedProfile > 0
-                        if (!connected && subscriptions.any { it.subscription!!.link.startsWith("http://", ignoreCase = true) == true || it.subscription!!.updateWhenConnectedOnly }) {
-                            MaterialAlertDialogBuilder(requireContext())
-                                .setTitle(R.string.confirm)
-                                .setMessage(getString(R.string.update_subscription_warning))
-                                .setPositiveButton(android.R.string.ok) { _, _ ->
-                                    subscriptions.forEach { GroupUpdater.startUpdate(it, true, parallel = true) }
-                                }
-                                .setNegativeButton(android.R.string.cancel, null)
-                                .show()
-                        } else {
-                            subscriptions.forEach { GroupUpdater.startUpdate(it, true, parallel = true) }
-                        }
+                        SagerDatabase.groupDao.allGroups()
+                            .filter { it.type == GroupType.SUBSCRIPTION }
+                            .filter { if (connected) true else !it.subscription!!.updateWhenConnectedOnly }
+                            .forEach {
+                                GroupUpdater.startUpdate(it, byUser = false) // Do not display changelog or error message
+                            }
                     }
                     .setNegativeButton(android.R.string.cancel, null)
                     .show()
@@ -182,7 +175,9 @@ class GroupFragment : ToolbarFragment(R.layout.layout_group),
                     }
                 }.joinToString("\n")
                 try {
-                    (requireActivity() as MainActivity).contentResolver.openOutputStream(data)!!.bufferedWriter().use {
+                    (requireActivity() as MainActivity).contentResolver.openOutputStream(
+                        data
+                    )!!.bufferedWriter().use {
                         it.write(links)
                     }
                     onMainDispatcher {
@@ -209,7 +204,9 @@ class GroupFragment : ToolbarFragment(R.layout.layout_group),
                     } else null
                 }.joinToString("\n")
                 try {
-                    (requireActivity() as MainActivity).contentResolver.openOutputStream(data)!!.bufferedWriter().use {
+                    (requireActivity() as MainActivity).contentResolver.openOutputStream(
+                        data
+                    )!!.bufferedWriter().use {
                         it.write(links)
                     }
                     onMainDispatcher {

@@ -54,8 +54,7 @@ object RawUpdater : GroupUpdater() {
         proxyGroup: ProxyGroup,
         subscription: SubscriptionBean,
         userInterface: GroupManager.Interface?,
-        byUser: Boolean,
-        parallel: Boolean,
+        byUser: Boolean
     ) {
 
         val link = subscription.link
@@ -231,10 +230,8 @@ object RawUpdater : GroupUpdater() {
         SagerDatabase.groupDao.updateGroup(proxyGroup)
         finishUpdate(proxyGroup)
 
-        if (!parallel) {
-            userInterface?.onUpdateSuccess(
-                proxyGroup, changed, added, updated, deleted, duplicate, byUser
-            )
+        if (byUser && userInterface != null) {
+            userInterface.onUpdateSuccess(proxyGroup, changed, added, updated, deleted, duplicate)
         }
     }
 

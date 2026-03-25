@@ -38,8 +38,7 @@ abstract class GroupUpdater {
         proxyGroup: ProxyGroup,
         subscription: SubscriptionBean,
         userInterface: GroupManager.Interface?,
-        byUser: Boolean,
-        parallel: Boolean = false,
+        byUser: Boolean
     )
 
     data class Progress(
@@ -53,25 +52,30 @@ abstract class GroupUpdater {
         val updating = Collections.synchronizedSet<Long>(mutableSetOf())
         val progress = Collections.synchronizedMap<Long, Progress>(mutableMapOf())
 
-        fun startUpdate(proxyGroup: ProxyGroup, byUser: Boolean, parallel: Boolean = false) {
+        fun startUpdate(proxyGroup: ProxyGroup, byUser: Boolean) {
             runOnDefaultDispatcher {
-                executeUpdate(proxyGroup, byUser, parallel)
+                executeUpdate(proxyGroup, byUser)
             }
         }
 
-        suspend fun executeUpdate(proxyGroup: ProxyGroup, byUser: Boolean, parallel: Boolean = false): Boolean {
+        suspend fun executeUpdate(proxyGroup: ProxyGroup, byUser: Boolean): Boolean {
             return coroutineScope {
                 if (!updating.add(proxyGroup.id)) cancel()
                 GroupManager.postReload(proxyGroup.id)
 
                 val subscription = proxyGroup.subscription!!
                 val connected = SagerNet.started && DataStore.startedProfile > 0
-                val userInterface = GroupManager.userInterface!!
+                val userInterface = GroupManager.userInterface
 
-                if (!parallel && (subscription.link?.startsWith("http://", ignoreCase = true) == true || subscription.updateWhenConnectedOnly) && !connected) {
-                    if (!userInterface.confirm(app.getString(R.string.update_subscription_warning))) {
+                if (subscription.updateWhenConnectedOnly && !connected) {
+                    if (!byUser || userInterface == null) {
                         finishUpdate(proxyGroup)
                         cancel()
+                    } else {
+                        if (!userInterface.confirm(app.getString(R.string.update_subscription_warning))) {
+                            finishUpdate(proxyGroup)
+                            cancel()
+                        }
                     }
                 }
 
@@ -80,11 +84,11 @@ abstract class GroupUpdater {
                         SubscriptionType.RAW -> RawUpdater
                         SubscriptionType.SIP008 -> SIP008Updater
                         else -> error("unsupported")
-                    }.doUpdate(proxyGroup, subscription, userInterface, byUser, parallel)
+                    }.doUpdate(proxyGroup, subscription, userInterface, byUser)
                     true
                 } catch (e: Throwable) {
                     Logs.w(e)
-                    if (!parallel) {
+                    if (byUser && userInterface != null) {
                         userInterface.onUpdateFailure(proxyGroup, e.readableMessage)
                     }
                     finishUpdate(proxyGroup)
