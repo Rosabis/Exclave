@@ -1781,7 +1781,7 @@ class ConfigurationFragment @JvmOverloads constructor(
                                     showShare(it)
                                 }
                             }
-
+                        }
                         }
                     }
                 }
