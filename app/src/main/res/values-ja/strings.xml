@@ -101,7 +101,7 @@
     <string name="http_host">HTTPホスト</string>
     <string name="http_path">HTTPパス</string>
     <string name="quic_security">QUICセキュリティ</string>
-    <string name="quic_key">Quic キー</string>
+    <string name="quic_key">QUIC キー</string>
     <string name="kcp_seed">mKCPシード</string>
     <string name="grpc_service_name">gRPCサービス名</string>
     <string name="url">URL</string>
@@ -394,7 +394,7 @@
     <string name="action_switch">スイッチ</string>
     <string name="udp_over_tcp">UDP over TCP</string>
     <string name="tuic_udp_relay_mode">UDPリレーモード</string>
-    <string name="tuic_congestion_controller">輻輳コントローラー</string>
+    <string name="congestion_control">輻輳コントローラー</string>
     <string name="tuic_disable_sni">SNIを無効化</string>
     <string name="tuic_zero_rtt_handshake">0-RTT ハンドシェイク</string>
     <string name="reality_public_key">REALITY 公開鍵</string>

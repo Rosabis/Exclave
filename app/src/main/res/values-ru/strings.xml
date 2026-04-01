@@ -406,7 +406,7 @@
     <string name="flow">Алгоритм управления потоком</string>
     <string name="udp_over_tcp">UDP поверх TCP</string>
     <string name="tuic_disable_sni">Выключить SNI</string>
-    <string name="tuic_congestion_controller">Контроллер перегрузки</string>
+    <string name="congestion_control">Контроль перегрузки</string>
     <string name="tuic_udp_relay_mode">Режим UDP-ретранслятора</string>
     <string name="route_need_background_location">Правило маршрутизации `%s` требует доступа к вашему **Wi-Fi SSID**, но для этого требуется **разрешение на фоновое определение местоположения**</string>
     <string name="route_need_coarse_location">Правило маршрутизации `%s` требует доступа к вашему **Wi-Fi SSID**, но для этого требуется **грубое разрешение на определение местоположения**</string>
@@ -577,4 +577,8 @@
     <string name="ech">ECH</string>
     <string name="server_name_to_verify">ServerNameToVerify (имя сервера для проверки)</string>
     <string name="mieru_traffic_pattern">Паттерн трафика</string>
+    <string name="insecure_warning_detail">Безопасность этого профиля эквивалентна открытому тексту.\n\nЭто предупреждение отображается, поскольку включена функция \"Советы по безопасности\".</string>
+    <string name="hysteria_hop_interval_min">Минимальный интервал переключения портов (с)</string>
+    <string name="hysteria_hop_interval_max">Максимальный интервал переключения портов (с)</string>
+    <string name="hysteria_bbr_profile">Профиль BBR</string>
 </resources>

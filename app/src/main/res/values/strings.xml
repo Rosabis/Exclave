@@ -117,7 +117,7 @@
     <string name="http_host">HTTP host</string>
     <string name="http_path">HTTP path</string>
     <string name="quic_security">QUIC Security</string>
-    <string name="quic_key">Quic key</string>
+    <string name="quic_key">QUIC key</string>
     <string name="kcp_seed">mKCP seed</string>
     <string name="grpc_service_name">gRPC service name</string>
     <string name="url">URL</string>
@@ -453,7 +453,7 @@
     <string name="action_switch">Switch</string>
     <string name="udp_over_tcp">UDP over TCP</string>
     <string name="tuic_udp_relay_mode">UDP relay mode</string>
-    <string name="tuic_congestion_controller">Congestion controller</string>
+    <string name="congestion_control">Congestion control</string>
     <string name="tuic_disable_sni">Disable SNI</string>
     <string name="tuic_zero_rtt_handshake">0-RTT handshake</string>
     <string name="reality_public_key">REALITY public key</string>
@@ -615,4 +615,8 @@
     <string name="ech">ECH</string>
     <string name="server_name_to_verify">ServerNameToVerify</string>
     <string name="mieru_traffic_pattern">Traffic pattern</string>
+    <string name="insecure_warning_detail">The security of this profile is equivalent to cleartext.\n\nThis warning is displayed because \"security tips\" is enabled.</string>
+    <string name="hysteria_hop_interval_min">Minimum port hopping interval (s)</string>
+    <string name="hysteria_hop_interval_max">Maximum port hopping interval (s)</string>
+    <string name="hysteria_bbr_profile">BBR profile</string>
 </resources>
