@@ -492,11 +492,7 @@ class BaseService {
                 try {
                     Executable.killAll()    // clean up old processes
                     preInit()
-                    try {
-                        proxy.init()
-                    } catch (e: Exception) {
-                        error(e.readableMessage)
-                    }
+                    proxy.init()
                     proxy.processes = GuardedProcessPool {
                         Logs.w(it)
                         stopRunner(false, it.readableMessage)
@@ -532,7 +528,7 @@ class BaseService {
                 } catch (exc: Throwable) {
                     if (exc is ExpectedException) Logs.d(exc.readableMessage) else Logs.w(exc)
                     stopRunner(
-                        false, "${getString(R.string.service_failed)}: ${exc.readableMessage}"
+                        false, exc.readableMessage
                     )
                 } finally {
                     data.connectingJob = null
