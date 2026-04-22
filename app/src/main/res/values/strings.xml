@@ -12,7 +12,6 @@
     <string name="theme">Theme</string>
     <string name="group_default">Ungrouped</string>
     <string name="quick_toggle">Toggle</string>
-    <string name="tile_title">Switcher</string>
     <string name="menu_traffic">Traffic</string>
     <!-- group -->
     <string name="group_name">Group name</string>
@@ -216,6 +215,8 @@
     <string name="balancer_settings">Balancer settings</string>
     <string name="balancer_type">Type</string>
     <string name="balancer_strategy">Strategy</string>
+    <string name="balancer_use_landing_proxy">Use group landing proxy</string>
+    <string name="balancer_use_front_proxy">Use group front proxy</string>
     <string name="chain_settings">Chain settings</string>
     <string name="config_settings">Config settings</string>
     <string name="circular_reference">Circular reference</string>
@@ -449,7 +450,6 @@
     <string name="mtu">MTU</string>
     <string name="experimental_reduced_iv_head_entropy">This is GFWReport\'s proposal for a countermeasure for the random stream like protocol blocking behavior observed on GFW.
 \n\nThis option remap the first 6 bytes of IV to printable characters, it\'s possible for anyone on the privileged network path to identify the protocol when enabled.</string>
-    <string name="action_switch">Switch</string>
     <string name="udp_over_tcp">UDP over TCP</string>
     <string name="tuic_udp_relay_mode">UDP relay mode</string>
     <string name="congestion_control">Congestion control</string>
@@ -618,4 +618,7 @@
     <string name="hysteria_hop_interval_min">Minimum port hopping interval (s)</string>
     <string name="hysteria_hop_interval_max">Maximum port hopping interval (s)</string>
     <string name="hysteria_bbr_profile">BBR profile</string>
+    <string name="require_socks">Enable SOCKS5 inbound</string>
+    <string name="custom_package_name_or_uid">Custom package name or UID</string>
+    <string name="udp" translatable="false">UDP</string>
 </resources>

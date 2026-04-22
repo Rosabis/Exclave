@@ -74,7 +74,6 @@
     <string name="group_subscription_link">Ссылка для подписки</string>
     <string name="group_update">Обновить</string>
     <string name="group_name">Имя группы</string>
-    <string name="tile_title">Переключатель</string>
     <string name="quick_toggle">Переключить</string>
     <string name="group_default">Без группы</string>
     <string name="theme">Тема</string>
@@ -216,6 +215,8 @@
     <string name="balancer_type">Тип</string>
     <string name="balancer_settings">Настройки балансировщика</string>
     <string name="balancer">Балансировщик</string>
+    <string name="balancer_use_landing_proxy">Использовать конечный прокси группы</string>
+    <string name="balancer_use_front_proxy">Использовать начальный прокси группы</string>
     <string name="custom_config">Пользовательская конфигурация</string>
     <string name="proxy_chain">Прокси-цепочка</string>
     <string name="select_profile">Выбрать профиль</string>
@@ -401,7 +402,6 @@
     <string name="packet_encoding">Кодирование пакетов</string>
     <string name="tasker_settings">Настройки заданий</string>
     <string name="tasker_action">Действие</string>
-    <string name="action_switch">Переключить</string>
     <string name="flow">Алгоритм управления потоком</string>
     <string name="udp_over_tcp">UDP поверх TCP</string>
     <string name="tuic_disable_sni">Выключить SNI</string>
@@ -580,4 +580,6 @@
     <string name="hysteria_hop_interval_min">Минимальный интервал переключения портов (с)</string>
     <string name="hysteria_hop_interval_max">Максимальный интервал переключения портов (с)</string>
     <string name="hysteria_bbr_profile">Профиль BBR</string>
+    <string name="require_socks">Включить входящий трафик SOCKS5</string>
+    <string name="custom_package_name_or_uid">Пользовательское имя пакета или UID</string>
 </resources>

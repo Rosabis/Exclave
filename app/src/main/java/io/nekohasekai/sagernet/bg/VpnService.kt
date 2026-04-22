@@ -266,7 +266,8 @@ class VpnService : BaseVpnService(),
             builder.addDnsServer(PRIVATE_VLAN6_DNS)
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && DataStore.appendHttpProxy && DataStore.requireHttp) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && DataStore.appendHttpProxy && DataStore.requireHttp
+            && DataStore.httpUsername.isEmpty() && DataStore.httpPassword.isEmpty()) {
             if (DataStore.httpProxyException.isNotEmpty()) {
                 builder.setHttpProxy(ProxyInfo.buildDirectProxy(LOCALHOST, DataStore.httpPort,
                     DataStore.httpProxyException.listByLineOrComma()))
@@ -301,7 +302,8 @@ class VpnService : BaseVpnService(),
             implementation = tunImplementation
             sniffing = DataStore.trafficSniffing
             overrideDestination = DataStore.destinationOverride
-            fakeDNS = DataStore.enableFakeDns
+            // fakeDNS = DataStore.enableFakeDns
+            fakeDNS = data.proxy!!.config.useFakeDNS
             dumpUID = data.proxy!!.config.dumpUID
             trafficStats = DataStore.appTrafficStatistics
             pCap = DataStore.enablePcap

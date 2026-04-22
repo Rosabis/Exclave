@@ -66,8 +66,8 @@ fun Project.requireLocalProperties(): Properties {
 
 fun Project.setupCommon(projectName: String = "") {
     android.apply {
-        buildToolsVersion = "36.1.0"
-        compileSdk = 36
+        buildToolsVersion = "37.0.0"
+        compileSdk = 37
         defaultConfig.minSdk = if (projectName.lowercase() == "naive") 24 else 21
         compileOptions.sourceCompatibility = JavaVersion.VERSION_21
         compileOptions.targetCompatibility = JavaVersion.VERSION_21
@@ -170,12 +170,6 @@ fun Project.setupPlugin(projectName: String) {
     androidComponents.apply {
         onVariants { variant ->
             variant.outputs.forEach { output ->
-                when (output.filters.find { it.filterType == FilterConfiguration.FilterType.ABI }?.identifier) {
-                    "arm64-v8a" -> output.versionCode.set(verCode + 4)
-                    "x86_64" -> output.versionCode.set(verCode + 3)
-                    "armeabi-v7a" -> output.versionCode.set(verCode + 2)
-                    "x86" -> output.versionCode.set(verCode + 1)
-                }
                 (output as? VariantOutputImpl)?.let { variantOutputImpl ->
                     val versionName = variantOutputImpl.versionName.orNull.orEmpty()
                     variantOutputImpl.outputFileName.set(variantOutputImpl.outputFileName.get()

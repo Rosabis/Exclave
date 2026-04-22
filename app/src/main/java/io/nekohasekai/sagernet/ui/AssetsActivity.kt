@@ -330,7 +330,7 @@ class AssetsActivity : ThemedActivity() {
         val client = Libsagernetcore.newHttpClient().apply {
             keepAlive()
             if (SagerNet.started && DataStore.startedProfile > 0) {
-                useSocks5(DataStore.socksPort)
+                useUDS(SagerNet.deviceStorage.noBackupFilesDir.toString() + "/ipc_path")
             }
         }
 
@@ -391,7 +391,7 @@ class AssetsActivity : ThemedActivity() {
         val client = Libsagernetcore.newHttpClient().apply {
             keepAlive()
             if (SagerNet.started && DataStore.startedProfile > 0) {
-                useSocks5(DataStore.socksPort)
+                useUDS(SagerNet.deviceStorage.noBackupFilesDir.toString() + "/ipc_path")
             }
         }
         try {

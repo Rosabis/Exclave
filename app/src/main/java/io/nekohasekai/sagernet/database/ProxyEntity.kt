@@ -339,15 +339,18 @@ data class ProxyEntity(
                 }
 
                 for ((_, chain) in config.index) {
-                    chain.entries.forEachIndexed { _, (port, profile) ->
+                    chain.entries.forEachIndexed { _, (triple, profile) ->
+                        val port = triple.first
+                        val username = triple.second
+                        val password = triple.third
                         when (val bean = profile.requireBean()) {
                             is NaiveBean -> {
                                 append("\n\n")
-                                append(bean.buildNaiveConfig(port))
+                                append(bean.buildNaiveConfig(port, username, password))
                             }
                             is ShadowQUICBean -> {
                                 append("\n\n")
-                                append(bean.buildShadowQUICConfig(port, forExport = true))
+                                append(bean.buildShadowQUICConfig(port, username, password, forExport = true))
                             }
                         }
                     }
@@ -357,14 +360,9 @@ data class ProxyEntity(
     }
 
     fun needExternal(): Boolean {
-        val bean = requireBean()
-        if (bean is ConfigBean) {
-            return bean.type != "v2ray_outbound"
-        }
         return when (type) {
             TYPE_NAIVE -> true
             TYPE_SHADOWQUIC -> true
-
             else -> false
         }
     }
@@ -547,6 +545,9 @@ data class ProxyEntity(
 
         @Query("SELECT * FROM proxy_entities WHERE id = :proxyId")
         fun getById(proxyId: Long): ProxyEntity?
+
+        @Query("SELECT COUNT(*) FROM proxy_entities WHERE groupId = :groupId AND id = :proxyId LIMIT 1")
+        fun isIdInGroup(proxyId: Long, groupId: Long): Long
 
         @Query("DELETE FROM proxy_entities WHERE id IN (:proxyId)")
         fun deleteById(proxyId: Long): Int

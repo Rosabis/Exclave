@@ -40,6 +40,7 @@ import io.nekohasekai.sagernet.Key.MODE_VPN
 import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.database.preference.EditTextPreferenceModifiers
 import io.nekohasekai.sagernet.ktx.*
+import io.nekohasekai.sagernet.ui.profile.ProfileSettingsActivity
 import io.nekohasekai.sagernet.utils.PackageCache
 import io.nekohasekai.sagernet.utils.Theme
 import io.nekohasekai.sagernet.widget.ColorPickerPreference
@@ -85,6 +86,8 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         isProxyApps = findPreference(Key.PROXY_APPS)!!
         val bypassLan = findPreference<SwitchPreference>(Key.BYPASS_LAN)!!
         val requireHttp = findPreference<SwitchPreference>(Key.REQUIRE_HTTP)!!
+        val httpUsername = findPreference<EditTextPreference>(Key.HTTP_USERNAME)!!
+        val httpPassword = findPreference<EditTextPreference>(Key.HTTP_PASSWORD)!!
         val appendHttpProxy = findPreference<SwitchPreference>(Key.APPEND_HTTP_PROXY)!!
         val httpProxyException = findPreference<EditTextPreference>(Key.HTTP_PROXY_EXCEPTION)!!
 
@@ -153,18 +156,26 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         val discardICMP = findPreference<SwitchPreference>(Key.DISCARD_ICMP)!!
         val appTrafficStatistics = findPreference<SwitchPreference>(Key.APP_TRAFFIC_STATISTICS)!!
         serviceMode.setOnPreferenceChangeListener { _, newValue ->
+            newValue as String
             tunImplementation.isEnabled = newValue == MODE_VPN
             mtu.isEnabled = newValue == MODE_VPN
             enableVPNInterfaceIPv6Address.isEnabled = newValue == MODE_VPN
             allowAppsBypassVpn.isEnabled = newValue == MODE_VPN
             discardICMP.isEnabled = newValue == MODE_VPN
             meteredNetwork.isEnabled = newValue == MODE_VPN
-            enablePcap.isEnabled = newValue == MODE_VPN && tunImplementation.value == "${TunImplementation.GVISOR}"
+            enablePcap.isEnabled = newValue == MODE_VPN && tunImplementation.value.toInt() == TunImplementation.GVISOR
             appTrafficStatistics.isEnabled = newValue == MODE_VPN
             isProxyApps.isEnabled = newValue == MODE_VPN
             bypassLan.isEnabled = newValue == MODE_VPN
-            appendHttpProxy.isEnabled = requireHttp.isChecked && newValue == MODE_VPN
-            httpProxyException.isEnabled = requireHttp.isChecked && newValue == MODE_VPN && appendHttpProxy.isChecked
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                appendHttpProxy.isVisible = requireHttp.isChecked && newValue == MODE_VPN
+                        && httpUsername.isVisible && httpUsername.text.isNullOrEmpty()
+                        && httpPassword.isVisible && httpPassword.text.isNullOrEmpty()
+                httpProxyException.isVisible = requireHttp.isChecked && newValue == MODE_VPN
+                        && appendHttpProxy.isVisible && appendHttpProxy.isChecked
+                        && httpUsername.isVisible && httpUsername.text.isNullOrEmpty()
+                        && httpPassword.isVisible && httpPassword.text.isNullOrEmpty()
+            }
             if (SagerNet.started) {
                 SagerNet.stopService()
                 runOnMainDispatcher {
@@ -176,7 +187,7 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         }
         tunImplementation.isEnabled = serviceMode.value == MODE_VPN
         tunImplementation.setOnPreferenceChangeListener { _, newValue ->
-            enablePcap.isEnabled = serviceMode.value == MODE_VPN && newValue == "${TunImplementation.GVISOR}"
+            enablePcap.isEnabled = serviceMode.value == MODE_VPN && (newValue as String).toInt() == TunImplementation.GVISOR
             if (SagerNet.started) {
                 SagerNet.stopService()
                 runOnMainDispatcher {
@@ -197,7 +208,7 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         }
         meteredNetwork.isEnabled = serviceMode.value == MODE_VPN
         meteredNetwork.onPreferenceChangeListener = reloadListener
-        enablePcap.isEnabled = serviceMode.value == MODE_VPN && tunImplementation.value == "${TunImplementation.GVISOR}"
+        enablePcap.isEnabled = serviceMode.value == MODE_VPN && tunImplementation.value.toInt() == TunImplementation.GVISOR
         enablePcap.setOnPreferenceChangeListener { _, newValue ->
             if (newValue as Boolean) {
                 val path = File(
@@ -369,17 +380,76 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         // inbound settings
         findPreference<SwitchPreference>(Key.ALLOW_ACCESS)!!.onPreferenceChangeListener = reloadListener
 
+        val allowAccess = findPreference<SwitchPreference>(Key.ALLOW_ACCESS)!!
+        allowAccess.onPreferenceChangeListener = reloadListener
+        val requireSocks = findPreference<SwitchPreference>(Key.REQUIRE_SOCKS)!!
+        val requireTransproxy = findPreference<SwitchPreference>(Key.REQUIRE_TRANSPROXY)!!
+        val requireDns = findPreference<SwitchPreference>(Key.REQUIRE_DNS_INBOUND)!!
+        allowAccess.isVisible = requireSocks.isChecked || requireHttp.isChecked || requireTransproxy.isChecked || requireDns.isChecked
+
         val portSocks5 = findPreference<EditTextPreference>(Key.SOCKS_PORT)!!
         portSocks5.setOnBindEditTextListener(EditTextPreferenceModifiers.Port)
+        portSocks5.isVisible = requireSocks.isChecked
         portSocks5.onPreferenceChangeListener = reloadListener
+        val socks5Username = findPreference<EditTextPreference>(Key.SOCKS_USERNAME)!!
+        socks5Username.isVisible = requireSocks.isChecked
+        socks5Username.onPreferenceChangeListener = reloadListener
+        val socks5Password = findPreference<EditTextPreference>(Key.SOCKS_PASSWORD)!!
+        socks5Password.summaryProvider = ProfileSettingsActivity.PasswordSummaryProvider
+        socks5Password.isVisible = requireSocks.isChecked
+        socks5Password.onPreferenceChangeListener = reloadListener
+        val socks5UDP = findPreference<SwitchPreference>(Key.SOCKS_UDP)!!
+        socks5UDP.isVisible = requireSocks.isChecked
+        socks5UDP.onPreferenceChangeListener = reloadListener
+        requireSocks.setOnPreferenceChangeListener { _, newValue ->
+            portSocks5.isVisible = newValue as Boolean
+            socks5Username.isVisible = newValue
+            socks5Password.isVisible = newValue
+            socks5UDP.isVisible = newValue
+            allowAccess.isVisible = newValue || requireHttp.isChecked || requireTransproxy.isChecked || requireDns.isChecked
+            needReload()
+            true
+        }
 
         val portHttp = findPreference<EditTextPreference>(Key.HTTP_PORT)!!
         portHttp.setOnBindEditTextListener(EditTextPreferenceModifiers.Port)
-        portHttp.isEnabled = requireHttp.isChecked
+        portHttp.isVisible = requireHttp.isChecked
         portHttp.onPreferenceChangeListener = reloadListener
+        httpUsername.isVisible = requireHttp.isChecked
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            httpUsername.onPreferenceChangeListener = reloadListener
+        } else {
+            httpUsername.onPreferenceChangeListener = { _, newValue ->
+                newValue as String
+                appendHttpProxy.isVisible = serviceMode.value == MODE_VPN && newValue.isEmpty() && httpPassword.isVisible && httpPassword.text.isNullOrEmpty()
+                httpProxyException.isVisible = serviceMode.value == MODE_VPN && newValue.isEmpty()
+                        && appendHttpProxy.isVisible && appendHttpProxy.isChecked
+                        && newValue.isEmpty() && httpPassword.isVisible && httpPassword.text.isNullOrEmpty()
+                needReload()
+                true
+            }
+        }
+        httpPassword.summaryProvider = ProfileSettingsActivity.PasswordSummaryProvider
+        httpPassword.isVisible = requireHttp.isChecked
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            httpPassword.onPreferenceChangeListener = reloadListener
+        } else {
+            httpPassword.onPreferenceChangeListener = { _, newValue ->
+                newValue as String
+                appendHttpProxy.isVisible = serviceMode.value == MODE_VPN && newValue.isEmpty() && httpUsername.isVisible && httpUsername.text.isNullOrEmpty()
+                httpProxyException.isVisible = serviceMode.value == MODE_VPN && newValue.isEmpty()
+                        && appendHttpProxy.isVisible && appendHttpProxy.isChecked
+                        && newValue.isEmpty() && httpUsername.isVisible && httpUsername.text.isNullOrEmpty()
+                needReload()
+                true
+            }
+        }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             requireHttp.setOnPreferenceChangeListener { _, newValue ->
-                portHttp.isEnabled = newValue as Boolean
+                portHttp.isVisible = newValue as Boolean
+                httpUsername.isVisible = newValue
+                httpPassword.isVisible = newValue
+                allowAccess.isVisible = requireSocks.isChecked || newValue || requireTransproxy.isChecked || requireDns.isChecked
                 needReload()
                 true
             }
@@ -387,42 +457,55 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
             httpProxyException.remove()
         } else {
             requireHttp.setOnPreferenceChangeListener { _, newValue ->
-                portHttp.isEnabled = newValue as Boolean
-                appendHttpProxy.isEnabled = newValue && serviceMode.value == MODE_VPN
-                httpProxyException.isEnabled = newValue && serviceMode.value == MODE_VPN && appendHttpProxy.isChecked
+                portHttp.isVisible = newValue as Boolean
+                httpUsername.isVisible = newValue
+                httpPassword.isVisible = newValue
+                appendHttpProxy.isVisible = newValue && serviceMode.value == MODE_VPN
+                        && httpUsername.isVisible && httpUsername.text.isNullOrEmpty()
+                        && httpPassword.isVisible && httpPassword.text.isNullOrEmpty()
+                httpProxyException.isVisible = newValue && serviceMode.value == MODE_VPN
+                        && appendHttpProxy.isVisible && appendHttpProxy.isChecked
+                        && httpUsername.isVisible && httpUsername.text.isNullOrEmpty()
+                        && httpPassword.isVisible && httpPassword.text.isNullOrEmpty()
+                allowAccess.isVisible = requireSocks.isChecked || newValue || requireTransproxy.isChecked || requireDns.isChecked
                 needReload()
                 true
             }
-            appendHttpProxy.isEnabled = requireHttp.isChecked && serviceMode.value == MODE_VPN
+            appendHttpProxy.isVisible = requireHttp.isChecked && serviceMode.value == MODE_VPN
+                    && httpUsername.isVisible && httpUsername.text.isNullOrEmpty()
+                    && httpPassword.isVisible && httpPassword.text.isNullOrEmpty()
             appendHttpProxy.setOnPreferenceChangeListener { _, newValue ->
-                httpProxyException.isEnabled = newValue as Boolean
+                httpProxyException.isVisible = newValue as Boolean
                 needReload()
                 true
             }
-            httpProxyException.isEnabled = requireHttp.isChecked && serviceMode.value == MODE_VPN && appendHttpProxy.isChecked
+            httpProxyException.isVisible = requireHttp.isChecked && serviceMode.value == MODE_VPN
+                    && appendHttpProxy.isVisible && appendHttpProxy.isChecked
+                    && httpUsername.isVisible && httpUsername.text.isNullOrEmpty()
+                    && httpPassword.isVisible && httpPassword.text.isNullOrEmpty()
             httpProxyException.onPreferenceChangeListener = reloadListener
         }
 
-        val requireTransproxy = findPreference<SwitchPreference>(Key.REQUIRE_TRANSPROXY)!!
         val transproxyPort = findPreference<EditTextPreference>(Key.TRANSPROXY_PORT)!!
         requireTransproxy.setOnPreferenceChangeListener { _, newValue ->
-            transproxyPort.isEnabled = newValue as Boolean
+            transproxyPort.isVisible = newValue as Boolean
+            allowAccess.isVisible = requireSocks.isChecked || requireHttp.isChecked || newValue || requireDns.isChecked
             needReload()
             true
         }
         transproxyPort.setOnBindEditTextListener(EditTextPreferenceModifiers.Port)
-        transproxyPort.isEnabled = requireTransproxy.isChecked
+        transproxyPort.isVisible = requireTransproxy.isChecked
         transproxyPort.onPreferenceChangeListener = reloadListener
 
-        val requireDns = findPreference<SwitchPreference>(Key.REQUIRE_DNS_INBOUND)!!
         val portLocalDns = findPreference<EditTextPreference>(Key.LOCAL_DNS_PORT)!!
         requireDns.setOnPreferenceChangeListener { _, newValue ->
-            portLocalDns.isEnabled = newValue as Boolean
+            portLocalDns.isVisible = newValue as Boolean
+            allowAccess.isVisible = requireSocks.isChecked || requireHttp.isChecked || requireTransproxy.isChecked || newValue
             needReload()
             true
         }
         portLocalDns.setOnBindEditTextListener(EditTextPreferenceModifiers.Port)
-        portLocalDns.isEnabled = requireDns.isChecked
+        portLocalDns.isVisible = requireDns.isChecked
         portLocalDns.onPreferenceChangeListener = reloadListener
 
         findPreference<EditTextPreference>(Key.PPROF_SERVER)!!.apply {

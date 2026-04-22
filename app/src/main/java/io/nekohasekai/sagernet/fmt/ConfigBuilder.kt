@@ -25,8 +25,9 @@ import android.os.Build
 import android.provider.Settings
 import com.github.shadowsocks.plugin.PluginConfiguration
 import com.github.shadowsocks.plugin.PluginManager
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
-import com.google.gson.JsonSyntaxException
+import com.google.gson.JsonObject
 import io.nekohasekai.sagernet.Key
 import io.nekohasekai.sagernet.LogLevel
 import io.nekohasekai.sagernet.RouteMode
@@ -112,6 +113,7 @@ import io.nekohasekai.sagernet.ktx.getBooleanProperty
 import io.nekohasekai.sagernet.ktx.getInt
 import io.nekohasekai.sagernet.ktx.getObject
 import io.nekohasekai.sagernet.ktx.getString
+import io.nekohasekai.sagernet.ktx.getStringArray
 import io.nekohasekai.sagernet.ktx.isValidHysteriaMultiPort
 import io.nekohasekai.sagernet.ktx.joinHostPort
 import io.nekohasekai.sagernet.ktx.listByLine
@@ -124,6 +126,9 @@ import io.nekohasekai.sagernet.ktx.uuidOrGenerate
 import io.nekohasekai.sagernet.utils.PackageCache
 import kotlin.io.encoding.Base64
 import libsagernetcore.Libsagernetcore
+import java.io.File
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 const val TAG_SOCKS = "socks"
 const val TAG_HTTP = "http"
@@ -158,13 +163,18 @@ class V2rayBuildResult(
     var observatoryTags: Set<String>,
     val dumpUID: Boolean,
     val alerts: List<Pair<Int, String>>,
+    val useFakeDNS: Boolean,
 ) {
-    data class IndexEntity(var isBalancer: Boolean, var chain: LinkedHashMap<Int, ProxyEntity>)
+    data class IndexEntity(var isBalancer: Boolean, var chain: LinkedHashMap<Triple<Int, String, String>, ProxyEntity>)
 }
 
+@OptIn(ExperimentalUuidApi::class)
 fun buildV2RayConfig(
     proxy: ProxyEntity, forTest: Boolean = false, forExport: Boolean = false
 ): V2rayBuildResult {
+    if (proxy.type == ProxyEntity.TYPE_CONFIG && proxy.configBean!!.type == "v2ray") {
+        return buildCustomConfig(proxy, forTest, forExport)
+    }
 
     val outboundTags = ArrayList<String>()
     val outboundTagsCurrent = ArrayList<String>()
@@ -201,6 +211,9 @@ fun buildV2RayConfig(
             }
             val beansMap = beans.associateBy { it.id }
             val beanList = ArrayList<ProxyEntity>()
+
+            // For balancer, we don't add landing proxy here
+            // It will be handled in buildChain() function
             for (proxyId in beansMap.keys) {
                 val item = beansMap[proxyId] ?: continue
                 if (item.id == id) continue
@@ -276,14 +289,12 @@ fun buildV2RayConfig(
     val indexMap = ArrayList<IndexEntity>()
     var requireWs = false
     var requireSh = false
-    val requireHttp = !forTest && DataStore.requireHttp
-    val requireTransproxy = if (forTest) false else DataStore.requireTransproxy
     val destinationOverride = DataStore.destinationOverride
     val trafficStatistics = !forTest && DataStore.profileTrafficStatistics
     var hasTagDirect = false
     var directNeedsInterruption = false
 
-    val shouldDumpUID = extraRules.any { it.packages.isNotEmpty() }
+    val shouldDumpUID = extraRules.any { it.packages.isNotEmpty() || it.customPackageNames.isNotEmpty() }
     val alerts = mutableListOf<Pair<Int, String>>()
 
     lateinit var result: V2rayBuildResult
@@ -348,101 +359,111 @@ fun buildV2RayConfig(
         }
         inbounds = mutableListOf()
 
-        if (!forTest) inbounds.add(InboundObject().apply {
-            tag = TAG_SOCKS
-            listen = bind
-            port = DataStore.socksPort
-            protocol = "socks"
-            settings = LazyInboundConfigurationObject(this,
-                SocksInboundConfigurationObject().apply {
-                    auth = "noauth"
-                    udp = true
-                })
-            if (trafficSniffing || useFakeDns) {
-                sniffing = InboundObject.SniffingObject().apply {
-                    enabled = true
-                    destOverride = when {
-                        useFakeDns && !trafficSniffing -> listOf("fakedns")
-                        useFakeDns -> listOf("fakedns", "http", "tls", "quic")
-                        else -> listOf("http", "tls", "quic")
-                    }
-                    metadataOnly = useFakeDns && !trafficSniffing
-                    routeOnly = !destinationOverride
-                }
-            }
-            if (shouldDumpUID) dumpUID = true
-        })
-
-        if (requireHttp) {
-            inbounds.add(InboundObject().apply {
-                tag = TAG_HTTP
-                listen = bind
-                port = DataStore.httpPort
-                protocol = "http"
-                settings = LazyInboundConfigurationObject(this,
-                    HTTPInboundConfigurationObject().apply {
-                        allowTransparent = true
-                    })
-                if (trafficSniffing || useFakeDns) {
-                    sniffing = InboundObject.SniffingObject().apply {
-                        enabled = true
-                        destOverride = when {
-                            useFakeDns && !trafficSniffing -> listOf("fakedns")
-                            useFakeDns -> listOf("fakedns", "http", "tls")
-                            else -> listOf("http", "tls")
-                        }
-                        metadataOnly = useFakeDns && !trafficSniffing
-                        routeOnly = !destinationOverride
-                    }
-                }
-                if (shouldDumpUID) dumpUID = true
-            })
-        }
-
-        if (requireTransproxy) {
-            inbounds.add(InboundObject().apply {
-                tag = TAG_TRANS
-                listen = bind
-                port = DataStore.transproxyPort
-                protocol = "dokodemo-door"
-                settings = LazyInboundConfigurationObject(this,
-                    DokodemoDoorInboundConfigurationObject().apply {
-                        // network = "tcp,udp"
-                        network = "tcp"
-                        followRedirect = true
-                    })
-                if (trafficSniffing || useFakeDns) {
-                    sniffing = InboundObject.SniffingObject().apply {
-                        enabled = true
-                        destOverride = when {
-                            useFakeDns && !trafficSniffing -> listOf("fakedns")
-                            // useFakeDns -> listOf("fakedns", "http", "tls", "quic")
-                            useFakeDns -> listOf("fakedns", "http", "tls")
-                            // else -> listOf("http", "tls", "quic")
-                            else -> listOf("http", "tls")
-                        }
-                        metadataOnly = useFakeDns && !trafficSniffing
-                        routeOnly = !destinationOverride
-                    }
-                }
-                /*when (DataStore.transproxyMode) {
-                    1 -> streamSettings = StreamSettingsObject().apply {
-                        sockopt = StreamSettingsObject.SockoptObject().apply {
-                            tproxy = "tproxy"
-                        }
-                    }
-                }*/
-                if (shouldDumpUID) dumpUID = true
-            })
-            if (bind == LOCALHOST) {
+        if (!forTest) {
+            if (!forExport) {
                 inbounds.add(InboundObject().apply {
-                    tag = TAG_TRANS6
-                    listen = LOCALHOST6
+                    tag = "ipc-in"
+                    protocol = "trojan"
+                    val path = SagerNet.deviceStorage.noBackupFilesDir.toString() + "/ipc_path"
+                    val udsFile = File(path)
+                    if (udsFile.exists()) udsFile.delete()
+                    listen = path
+                    settings = LazyInboundConfigurationObject(this, V2RayConfig.TrojanInboundConfigurationObject().apply {
+                        clients = listOf(V2RayConfig.TrojanInboundConfigurationObject.ClientObject().apply {
+                            password = ""
+                        })
+                    })
+                    if (trafficSniffing || useFakeDns) {
+                        sniffing = InboundObject.SniffingObject().apply {
+                            enabled = true
+                            destOverride = when {
+                                useFakeDns && !trafficSniffing -> listOf("fakedns")
+                                useFakeDns -> listOf("fakedns", "http", "tls", "quic")
+                                else -> listOf("http", "tls", "quic")
+                            }
+                            metadataOnly = useFakeDns && !trafficSniffing
+                            routeOnly = !destinationOverride
+                        }
+                    }
+                })
+            }
+            if (DataStore.requireSocks) {
+                inbounds.add(InboundObject().apply {
+                    tag = TAG_SOCKS
+                    listen = bind
+                    port = DataStore.socksPort
+                    protocol = "socks"
+                    settings = LazyInboundConfigurationObject(this, SocksInboundConfigurationObject().apply {
+                        if (DataStore.socksUsername.isEmpty() && DataStore.socksPassword.isEmpty()) {
+                            auth = "noauth"
+                        } else if (DataStore.socksUsername.isEmpty() && DataStore.socksPassword.isNotEmpty()) {
+                            error("username is empty but password is not empty for SOCKS5 inbound")
+                        } else if (DataStore.socksUsername.isNotEmpty() && DataStore.socksPassword.isEmpty()) {
+                            error("username is not empty but password is empty for SOCKS5 inbound")
+                        } else {
+                            auth = "password"
+                            accounts = listOf(SocksInboundConfigurationObject.AccountObject().apply {
+                                user = DataStore.socksUsername
+                                pass = DataStore.socksPassword
+                            })
+                        }
+                        udp = DataStore.socksUDP
+                    })
+                    if (trafficSniffing || useFakeDns) {
+                        sniffing = InboundObject.SniffingObject().apply {
+                            enabled = true
+                            destOverride = when {
+                                useFakeDns && !trafficSniffing -> listOf("fakedns")
+                                useFakeDns -> listOf("fakedns", "http", "tls", "quic")
+                                else -> listOf("http", "tls", "quic")
+                            }
+                            metadataOnly = useFakeDns && !trafficSniffing
+                            routeOnly = !destinationOverride
+                        }
+                    }
+                    if (shouldDumpUID) dumpUID = true
+                })
+            }
+            if (DataStore.requireHttp) {
+                inbounds.add(InboundObject().apply {
+                    tag = TAG_HTTP
+                    listen = bind
+                    port = DataStore.httpPort
+                    protocol = "http"
+                    settings = LazyInboundConfigurationObject(this,
+                        HTTPInboundConfigurationObject().apply {
+                            allowTransparent = true
+                            if (DataStore.httpUsername.isNotEmpty() || DataStore.httpPassword.isNotEmpty()) {
+                                accounts = listOf(HTTPInboundConfigurationObject.AccountObject().apply {
+                                    user = DataStore.httpUsername
+                                    pass = DataStore.httpPassword
+                                })
+                            }
+                        })
+                    if (trafficSniffing || useFakeDns) {
+                        sniffing = InboundObject.SniffingObject().apply {
+                            enabled = true
+                            destOverride = when {
+                                useFakeDns && !trafficSniffing -> listOf("fakedns")
+                                useFakeDns -> listOf("fakedns", "http", "tls")
+                                else -> listOf("http", "tls")
+                            }
+                            metadataOnly = useFakeDns && !trafficSniffing
+                            routeOnly = !destinationOverride
+                        }
+                    }
+                    if (shouldDumpUID) dumpUID = true
+                })
+            }
+
+            if (DataStore.requireTransproxy) {
+                inbounds.add(InboundObject().apply {
+                    tag = TAG_TRANS
+                    listen = bind
                     port = DataStore.transproxyPort
                     protocol = "dokodemo-door"
                     settings = LazyInboundConfigurationObject(this,
                         DokodemoDoorInboundConfigurationObject().apply {
-                            // network = "tcp,udp"
                             network = "tcp"
                             followRedirect = true
                         })
@@ -451,24 +472,41 @@ fun buildV2RayConfig(
                             enabled = true
                             destOverride = when {
                                 useFakeDns && !trafficSniffing -> listOf("fakedns")
-                                // useFakeDns -> listOf("fakedns", "http", "tls", "quic")
                                 useFakeDns -> listOf("fakedns", "http", "tls")
-                                // else -> listOf("http", "tls", "quic")
                                 else -> listOf("http", "tls")
                             }
                             metadataOnly = useFakeDns && !trafficSniffing
                             routeOnly = !destinationOverride
                         }
-                        /*when (DataStore.transproxyMode) {
-                            1 -> streamSettings = StreamSettingsObject().apply {
-                                sockopt = StreamSettingsObject.SockoptObject().apply {
-                                    tproxy = "tproxy"
-                                }
-                            }
-                        }*/
                     }
                     if (shouldDumpUID) dumpUID = true
                 })
+                if (bind == LOCALHOST) {
+                    inbounds.add(InboundObject().apply {
+                        tag = TAG_TRANS6
+                        listen = LOCALHOST6
+                        port = DataStore.transproxyPort
+                        protocol = "dokodemo-door"
+                        settings = LazyInboundConfigurationObject(this,
+                            DokodemoDoorInboundConfigurationObject().apply {
+                                network = "tcp"
+                                followRedirect = true
+                            })
+                        if (trafficSniffing || useFakeDns) {
+                            sniffing = InboundObject.SniffingObject().apply {
+                                enabled = true
+                                destOverride = when {
+                                    useFakeDns && !trafficSniffing -> listOf("fakedns")
+                                    useFakeDns -> listOf("fakedns", "http", "tls")
+                                    else -> listOf("http", "tls")
+                                }
+                                metadataOnly = useFakeDns && !trafficSniffing
+                                routeOnly = !destinationOverride
+                            }
+                        }
+                        if (shouldDumpUID) dumpUID = true
+                    })
+                }
             }
         }
 
@@ -564,7 +602,7 @@ fun buildV2RayConfig(
             lateinit var pastOutbound: OutboundObject
             lateinit var currentOutbound: OutboundObject
             lateinit var pastInboundTag: String
-            val chainMap = LinkedHashMap<Int, ProxyEntity>()
+            val chainMap = LinkedHashMap<Triple<Int, String, String>, ProxyEntity>()
             indexMap.add(IndexEntity(isBalancer, chainMap))
             val chainOutbounds = ArrayList<OutboundObject>()
             var chainOutbound = ""
@@ -612,28 +650,27 @@ fun buildV2RayConfig(
 
                     if (proxyEntity.needExternal()) {
                         val localPort = mkPort()
-                        chainMap[localPort] = proxyEntity
+                        val username = Uuid.generateV4().toHexString()
+                        val password = Uuid.generateV4().toHexString()
+                        chainMap[Triple(localPort, username, password)] = proxyEntity
                         currentOutbound.apply {
                             protocol = "socks"
-                            settings = LazyOutboundConfigurationObject(this,
-                                SocksOutboundConfigurationObject().apply {
-                                    servers = listOf(SocksOutboundConfigurationObject.ServerObject()
-                                        .apply {
-                                            address = LOCALHOST
-                                            port = localPort
-                                        })
-                                    if (DataStore.experimentalFlagsProperties.getBooleanProperty( "singuot")) {
-                                        proxyEntity.naiveBean?.singUoT?.takeIf { it }?.let {
-                                            uot = true
-                                        }
-                                    }
-                                    proxyEntity.naiveBean?.let {
-                                        directNeedsInterruption = true
-                                    }
-                                    proxyEntity.shadowquicBean?.let {
-                                        directNeedsInterruption = true
-                                    }
+                            settings = LazyOutboundConfigurationObject(this, SocksOutboundConfigurationObject().apply {
+                                servers = listOf(SocksOutboundConfigurationObject.ServerObject().apply {
+                                    address = LOCALHOST
+                                    port = localPort
+                                    users = listOf(SocksOutboundConfigurationObject.ServerObject.UserObject().apply {
+                                        user = username
+                                        pass = password
+                                    })
                                 })
+                                if (proxyEntity.naiveBean != null && proxyEntity.naiveBean!!.singUoT && DataStore.experimentalFlagsProperties.getBooleanProperty( "singuot")) {
+                                    uot = true
+                                }
+                                if (proxyEntity.naiveBean != null || proxyEntity.shadowquicBean != null) {
+                                    directNeedsInterruption = true
+                                }
+                            })
                         }
                     } else {
                         currentOutbound.apply {
@@ -1994,6 +2031,116 @@ fun buildV2RayConfig(
 
             if (isBalancer) {
                 val balancerBean = balancer()!!
+
+                // Check if we need to apply landing proxy for TYPE_GROUP balancer
+                val shouldUseLandingProxy = balancerBean.type == BalancerBean.TYPE_GROUP &&
+                                            balancerBean.useLandingProxy == true
+
+                if (shouldUseLandingProxy) {
+                    // Get the group and landing proxy
+                    val group = SagerDatabase.groupDao.getById(balancerBean.groupId)
+                    val landingProxyEntity = if (group != null && group.landingProxy > 0L) {
+                        SagerDatabase.proxyDao.getById(group.landingProxy)
+                    } else null
+
+                    if (landingProxyEntity != null) {
+                        // Validate landing proxy
+                        when (landingProxyEntity.type) {
+                            ProxyEntity.TYPE_BALANCER -> error("balancer can not be the landing proxy")
+                            ProxyEntity.TYPE_CONFIG -> if (landingProxyEntity.configBean!!.type == "v2ray")
+                                error("custom config can not be the landing proxy")
+                        }
+                        if (!landingProxyEntity.requireBean().canMapping()) {
+                            error("${landingProxyEntity.displayName()} can be the front proxy only and can not be the landing proxy")
+                        }
+
+                        // Get landing proxy chain
+                        val landingProxyList = when (landingProxyEntity.type) {
+                            ProxyEntity.TYPE_CHAIN -> landingProxyEntity.resolveChainRecursively()
+                            else -> mutableListOf(landingProxyEntity)
+                        }
+
+                        // For each proxy in profileList, we need to create a chain with landing proxy
+                        // We'll rebuild chainOutbounds with chains
+                        val originalProxies = profileList.toList()
+                        chainOutbounds.clear()
+
+                        for (mainProxy in originalProxies) {
+                            // Create a chain: landingProxyList + mainProxy
+                            // Landing proxy goes first to bypass whitelists, then mainProxy
+                            val chainList = landingProxyList.toMutableList()
+                            chainList.add(mainProxy)
+
+                            // Build this chain as a sub-chain
+                            val chainTag = buildChain(
+                                "$tagOutbound-chain-${mainProxy.id}",
+                                chainList,
+                                false, // not a balancer
+                                { null }
+                            )
+
+                            // Find the first outbound of this chain and add it to chainOutbounds
+                            val chainFirstOutbound = outbounds.findLast { it.tag == chainTag }
+                            if (chainFirstOutbound != null) {
+                                chainOutbounds.add(chainFirstOutbound)
+                            }
+                        }
+                    }
+                }
+
+                // Check if we need to apply front proxy for TYPE_GROUP balancer
+                val shouldUseFrontProxy = balancerBean.type == BalancerBean.TYPE_GROUP &&
+                                            balancerBean.useFrontProxy == true
+
+                if (shouldUseFrontProxy) {
+                    // Get the group and front proxy
+                    val group = SagerDatabase.groupDao.getById(balancerBean.groupId)
+                    val frontProxyEntity = if (group != null && group.frontProxy > 0L) {
+                        SagerDatabase.proxyDao.getById(group.frontProxy)
+                    } else null
+
+                    if (frontProxyEntity != null) {
+                        // Validate front proxy
+                        when (frontProxyEntity.type) {
+                            ProxyEntity.TYPE_BALANCER -> error("balancer can not be the front proxy")
+                            ProxyEntity.TYPE_CONFIG -> if (frontProxyEntity.configBean!!.type == "v2ray")
+                                error("custom config can not be the front proxy")
+                        }
+
+                        // Get front proxy chain
+                        val frontProxyList = when (frontProxyEntity.type) {
+                            ProxyEntity.TYPE_CHAIN -> frontProxyEntity.resolveChainRecursively()
+                            else -> mutableListOf(frontProxyEntity)
+                        }
+
+                        // For each proxy in profileList, we need to create a chain with front proxy
+                        // We'll rebuild chainOutbounds with chains
+                        val originalProxies = profileList.toList()
+                        chainOutbounds.clear()
+
+                        for (mainProxy in originalProxies) {
+                            // Create a chain: mainProxy + frontProxyList
+                            // Main proxy goes first, then front proxy
+                            val chainList = mutableListOf(mainProxy)
+                            chainList.addAll(frontProxyList)
+
+                            // Build this chain as a sub-chain
+                            val chainTag = buildChain(
+                                "$tagOutbound-chain-${mainProxy.id}",
+                                chainList,
+                                false, // not a balancer
+                                { null }
+                            )
+
+                            // Find the first outbound of this chain and add it to chainOutbounds
+                            val chainFirstOutbound = outbounds.findLast { it.tag == chainTag }
+                            if (chainFirstOutbound != null) {
+                                chainOutbounds.add(chainFirstOutbound)
+                            }
+                        }
+                    }
+                }
+
                 val observatory = ObservatoryObject().apply {
                     probeURL = balancerBean.probeUrl.ifEmpty {
                         DataStore.connectionTestURL
@@ -2081,15 +2228,25 @@ fun buildV2RayConfig(
 
         for (rule in extraRules) {
             val uidList = mutableListOf<Int>()
-            if (rule.packages.isNotEmpty()) {
+            if (rule.packages.isNotEmpty() || rule.customPackageNames.isNotEmpty()) {
                 if (!isVpn) {
                     alerts.add(Alerts.ROUTE_ALERT_NOT_VPN to rule.displayName())
                     continue
                 }
                 PackageCache.awaitLoadSync()
-                for (pkg in rule.packages) {
-                    PackageCache[pkg]?.let {
-                        uidList.add(it)
+                if (rule.customPackageNames.isNotEmpty()) {
+                    rule.customPackageNames.forEach {
+                        it.toIntOrNull()?.let {
+                            uidList.add(it)
+                        } ?: PackageCache[it]?.let {
+                            uidList.add(it)
+                        }
+                    }
+                } else {
+                    rule.packages.forEach {
+                        PackageCache[it]?.let {
+                            uidList.add(it)
+                        }
                     }
                 }
                 if (uidList.isEmpty()) {
@@ -2291,6 +2448,24 @@ fun buildV2RayConfig(
             protocol = "blackhole"
         })
 
+        if (!forTest && !forExport) {
+            inbounds.add(InboundObject().apply {
+                tag = TAG_DNS_IN
+                val path = SagerNet.deviceStorage.noBackupFilesDir.toString() + "/ipc_dns_path"
+                val udsFile = File(path)
+                if (udsFile.exists()) udsFile.delete()
+                listen = path
+                protocol = "dokodemo-door"
+                settings = LazyInboundConfigurationObject(this,
+                    DokodemoDoorInboundConfigurationObject().apply {
+                        address = LOCALHOST // placeholder, all queries are handled internally
+                        network = "unix"
+                        port = 53 // placeholder, all queries are handled internally
+                    }
+                )
+            })
+        }
+
         if (!forTest && DataStore.requireDnsInbound && DataStore.localDNSPort > 0) {
             inbounds.add(InboundObject().apply {
                 tag = TAG_DNS_IN
@@ -2299,7 +2474,7 @@ fun buildV2RayConfig(
                 protocol = "dokodemo-door"
                 settings = LazyInboundConfigurationObject(this,
                     DokodemoDoorInboundConfigurationObject().apply {
-                        address = bind // placeholder, all queries are handled internally
+                        address = LOCALHOST // placeholder, all queries are handled internally
                         network = "tcp,udp"
                         port = 53 // placeholder, all queries are handled internally
                     }
@@ -2627,7 +2802,8 @@ fun buildV2RayConfig(
             rootObserver?.tag ?: "",
             rootObserver?.settings?.get("subjectSelector") as? Set<String> ?: HashSet(),
             shouldDumpUID,
-            alerts
+            alerts,
+            DataStore.enableFakeDns,
         )
     }
 
@@ -2635,62 +2811,125 @@ fun buildV2RayConfig(
 
 }
 
-fun buildCustomConfig(proxy: ProxyEntity, port: Int): V2rayBuildResult {
-
-    val bind = LOCALHOST
-    val trafficSniffing = DataStore.trafficSniffing
-
+fun buildCustomConfig(proxy: ProxyEntity, forTest: Boolean = false, forExport: Boolean = false): V2rayBuildResult {
     val bean = proxy.configBean!!
     val config = parseJson(bean.content, lenient = true).asJsonObject
+
+    // TODO: add fake DNS pool CIDR to TUN route address
+    var useFakeDns = false
+    runCatching {
+        config.getObject("fakedns", ignoreCase = true)?.also {
+            useFakeDns = true
+        }
+    }
+    runCatching {
+        config.getArray("fakedns", ignoreCase = true)?.takeIf { it.isNotEmpty() }?.also {
+            useFakeDns = true
+        }
+    }
+    config.getObject("dns", ignoreCase = true)?.also { dns ->
+        runCatching {
+            dns.getBoolean("fakedns", ignoreCase = true)?.takeIf { it }?.also {
+                useFakeDns = true
+            }
+        }
+        runCatching {
+            dns.getStringArray("fakedns", ignoreCase = true)?.also {
+                useFakeDns = true
+            }
+        }
+        runCatching {
+            dns.getArray("fakedns", ignoreCase = true)?.also {
+                useFakeDns = true
+            }
+        }
+        var servers: List<JsonObject>? = null
+        try {
+            servers = dns.getArray("servers", ignoreCase = true)
+        } catch (_: Exception) {}
+        servers?.forEach { server ->
+            runCatching {
+                server.getBoolean("fakedns", ignoreCase = true)?.takeIf { it }?.also {
+                    useFakeDns = true
+                    return@forEach
+                }
+            }
+            runCatching {
+                server.getStringArray("fakedns", ignoreCase = true)?.also {
+                    useFakeDns = true
+                    return@forEach
+                }
+            }
+            runCatching {
+                server.getArray("fakedns", ignoreCase = true)?.also {
+                    useFakeDns = true
+                    return@forEach
+                }
+            }
+        }
+    }
+
+    var isConfigWithSniffing = false
+    var shouldDumpUID = false
+    config.getObject("routing", ignoreCase = true)?.also { routeObject ->
+        gson.fromJson(routeObject.toString(), RoutingObject::class.java)?.also { route ->
+            if (route.rules?.any { it.uid?.isNotEmpty() == true } == true) {
+                shouldDumpUID = true
+            }
+            if (route.rules?.any { it.protocol?.isNotEmpty() == true } == true) {
+                isConfigWithSniffing = true
+            }
+        }
+    }
+
     val inbounds = config.getArray("inbounds")
         ?.map { gson.fromJson(it.toString(), InboundObject::class.java) }
         ?.toMutableList() ?: ArrayList()
 
-    var socksInbound = inbounds.find { it.tag == TAG_SOCKS }?.apply {
-        if (protocol != "socks") error("Inbound $tag with type $protocol, excepted socks.")
-    }
-
-    if (socksInbound == null) {
-        val socksInbounds = inbounds.filter { it.protocol == "socks" }
-        if (socksInbounds.size == 1) {
-            socksInbound = socksInbounds[0]
-        }
-    }
-
-    if (socksInbound != null) {
-        socksInbound.apply {
-            listen = bind
-            this.port = port
-        }
-    } else {
+    if (!forTest && !forExport) {
         inbounds.add(InboundObject().apply {
-            tag = TAG_SOCKS
-            listen = bind
-            this.port = port
-            protocol = "socks"
-            settings = LazyInboundConfigurationObject(this,
-                SocksInboundConfigurationObject().apply {
-                    auth = "noauth"
-                    udp = true
-                })
-            if (trafficSniffing) {
+            tag = "ipc-in"
+            protocol = "trojan"
+            val path = SagerNet.deviceStorage.noBackupFilesDir.toString() + "/ipc_path"
+            val udsFile = File(path)
+            if (udsFile.exists()) udsFile.delete()
+            listen = path
+            if (DataStore.trafficSniffing || isConfigWithSniffing || useFakeDns) {
                 sniffing = InboundObject.SniffingObject().apply {
                     enabled = true
-                    destOverride = listOf("http", "tls", "quic")
-                    metadataOnly = false
+                    val protocols = mutableListOf<String>().apply {
+                        if (useFakeDns) add("fakedns")
+                        if (DataStore.trafficSniffing) addAll(listOf("http", "tls", "quic"))
+                    }
+                    if (protocols.isNotEmpty()) {
+                        destOverride = protocols
+                    }
+                    metadataOnly = useFakeDns && !DataStore.trafficSniffing && !isConfigWithSniffing
+                    routeOnly = DataStore.trafficSniffing && !DataStore.destinationOverride
                 }
             }
+            if (shouldDumpUID) dumpUID = true
+        })
+        inbounds.add(InboundObject().apply {
+            tag = TAG_DNS_IN
+            val path = SagerNet.deviceStorage.noBackupFilesDir.toString() + "/ipc_dns_path"
+            val udsFile = File(path)
+            if (udsFile.exists()) udsFile.delete()
+            listen = path
+            protocol = "dokodemo-door"
+            settings = LazyInboundConfigurationObject(this,
+                DokodemoDoorInboundConfigurationObject().apply {
+                    address = LOCALHOST // placeholder, all queries are handled internally
+                    network = "unix"
+                    port = 53 // placeholder, all queries are handled internally
+                }
+            )
         })
     }
 
-    val outbounds = try {
-        config.getArray("outbounds")?.map { it ->
-            gson.fromJson(it.toString() .takeIf { it.isNotEmpty() } ?: "{}",
-                OutboundObject::class.java)
-        }?.toMutableList()
-    } catch (_: JsonSyntaxException) {
-        null
-    }
+    val outbounds = config.getArray("outbounds")?.map {
+        gson.fromJson(it.toString(), OutboundObject::class.java)
+    }?.toMutableList()
     var flushOutbounds = false
 
     val outboundTags = ArrayList<String>()
@@ -2733,28 +2972,27 @@ fun buildCustomConfig(proxy: ProxyEntity, port: Int): V2rayBuildResult {
     config.add("inbounds", inboundArray)
     if (flushOutbounds) {
         outbounds!!.forEach { it.init() }
-        val outboundArray = JsonArray(inbounds.size)
+        val outboundArray = JsonArray(outbounds.size)
         for (outbound in outbounds) {
             outboundArray.add(parseJson(gson.toJson(outbound), lenient = true))
         }
     }
 
-
     return V2rayBuildResult(
-        config.toString(),
-        emptyList(),
-        false, // requireWs
-        0, // wsPort
-        false, // requireSh
-        0, // shPort
-        outboundTags,
-        outboundTags,
-        emptyMap(),
-        directTag,
-        "",
-        emptySet(),
-        false,
-        emptyList()
+        config = GsonBuilder().setPrettyPrinting().create().toJson(config),
+        index = emptyList(),
+        requireWs = false,
+        wsPort = 0,
+        requireSh = false,
+        shPort = 0,
+        outboundTags = outboundTags,
+        outboundTagsCurrent = outboundTags,
+        outboundTagsAll =  emptyMap(),
+        bypassTag =  directTag,
+        observerTag = "",
+        observatoryTags = emptySet(),
+        dumpUID =  shouldDumpUID,
+        alerts =  emptyList(),
+        useFakeDNS = useFakeDns,
     )
-
 }

@@ -243,7 +243,13 @@ object DataStore : OnPreferenceDataStoreChangeListener {
 
     val persistAcrossReboot by configurationStore.boolean(Key.PERSIST_ACROSS_REBOOT)
 
+    var requireSocks by configurationStore.boolean(Key.REQUIRE_SOCKS) { true }
+    var socksUsername by configurationStore.string(Key.SOCKS_USERNAME)
+    var socksPassword by configurationStore.string(Key.SOCKS_PASSWORD)
+    var socksUDP by configurationStore.boolean(Key.SOCKS_UDP) { true }
     var requireHttp by configurationStore.boolean(Key.REQUIRE_HTTP) { false }
+    var httpUsername by configurationStore.string(Key.HTTP_USERNAME)
+    var httpPassword by configurationStore.string(Key.HTTP_PASSWORD)
     var appendHttpProxy by configurationStore.boolean(Key.APPEND_HTTP_PROXY) { true }
     var httpProxyException by configurationStore.string(Key.HTTP_PROXY_EXCEPTION)
     var requireTransproxy by configurationStore.boolean(Key.REQUIRE_TRANSPROXY)
@@ -389,6 +395,8 @@ object DataStore : OnPreferenceDataStoreChangeListener {
     var balancerProbeInterval by profileCacheStore.stringToInt(Key.PROBE_INTERVAL) { 300 }
     var balancerNameFilter by profileCacheStore.string(Key.BALANCER_NAME_FILTER)
     var balancerNameFilter1 by profileCacheStore.string(Key.BALANCER_NAME_FILTER1)
+    var balancerUseLandingProxy by profileCacheStore.boolean(Key.BALANCER_USE_LANDING_PROXY)
+    var balancerUseFrontProxy by profileCacheStore.boolean(Key.BALANCER_USE_FRONT_PROXY)
 
 
     var routeName by profileCacheStore.string(Key.ROUTE_NAME)
@@ -405,6 +413,7 @@ object DataStore : OnPreferenceDataStoreChangeListener {
     var routeReverse by profileCacheStore.boolean(Key.ROUTE_REVERSE)
     var routeRedirect by profileCacheStore.string(Key.ROUTE_REDIRECT)
     var routePackages by profileCacheStore.string(Key.ROUTE_PACKAGES)
+    var routeCustomPackageNameOrUid by profileCacheStore.string(Key.ROUTE_CUSTOM_PACKAGE_NAME_OR_UID)
     var routeNetworkType by profileCacheStore.stringSet(Key.ROUTE_NETWORK_TYPE)
     var routeSSID by profileCacheStore.string(Key.ROUTE_SSID)
 

@@ -70,7 +70,13 @@ object Key {
     const val LOCAL_DNS_PORT = "portLocalDns"
     const val REQUIRE_DNS_INBOUND = "requireDnsInbound"
 
+    const val REQUIRE_SOCKS = "requireSocks"
+    const val SOCKS_USERNAME = "socksUsername"
+    const val SOCKS_PASSWORD = "socksPassword"
+    const val SOCKS_UDP = "socksUDP"
     const val REQUIRE_HTTP = "requireHttp"
+    const val HTTP_USERNAME = "httpUsername"
+    const val HTTP_PASSWORD = "httpPassword"
     const val APPEND_HTTP_PROXY = "appendHttpProxy"
     const val HTTP_PROXY_EXCEPTION = "httpProxyException"
     const val HTTP_PORT = "httpPort"
@@ -258,6 +264,8 @@ object Key {
     const val BALANCER_STRATEGY = "balancerStrategy"
     const val BALANCER_NAME_FILTER = "balancerNameFilter"
     const val BALANCER_NAME_FILTER1 = "balancerNameFilter1"
+    const val BALANCER_USE_LANDING_PROXY = "balancerUseLandingProxy"
+    const val BALANCER_USE_FRONT_PROXY = "balancerUseFrontProxy"
 
     const val ROUTE_NAME = "routeName"
     const val ROUTE_DOMAIN = "routeDomain"
@@ -273,6 +281,7 @@ object Key {
     const val ROUTE_REVERSE = "routeReverse"
     const val ROUTE_REDIRECT = "routeRedirect"
     const val ROUTE_PACKAGES = "routePackages"
+    const val ROUTE_CUSTOM_PACKAGE_NAME_OR_UID = "routeCustomPackageNameOrUid"
     const val ROUTE_NETWORK_TYPE = "routeNetworkType"
     const val ROUTE_SSID = "routeSSID"
 

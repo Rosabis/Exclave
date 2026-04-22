@@ -28,14 +28,12 @@ import android.webkit.WebViewClient
 import io.nekohasekai.sagernet.RootCAProvider
 import io.nekohasekai.sagernet.SagerNet
 import io.nekohasekai.sagernet.bg.AbstractInstance
-import io.nekohasekai.sagernet.bg.ExternalInstance
 import io.nekohasekai.sagernet.bg.GuardedProcessPool
 import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.database.ProxyEntity
 import io.nekohasekai.sagernet.fmt.LOCALHOST
 import io.nekohasekai.sagernet.fmt.V2rayBuildResult
 import io.nekohasekai.sagernet.fmt.buildV2RayConfig
-import io.nekohasekai.sagernet.fmt.internal.ConfigBean
 import io.nekohasekai.sagernet.fmt.naive.NaiveBean
 import io.nekohasekai.sagernet.fmt.naive.buildNaiveConfig
 import io.nekohasekai.sagernet.fmt.shadowquic.ShadowQUICBean
@@ -80,16 +78,19 @@ abstract class V2RayInstance(
         v2rayPoint = V2RayInstance()
         buildConfig()
         for ((_, chain) in config.index) {
-            chain.entries.forEachIndexed { _, (port, profile) ->
+            chain.entries.forEachIndexed { _, (triple, profile) ->
+                val port = triple.first
+                val username = triple.second
+                val password = triple.third
                 when (val bean = profile.requireBean()) {
                     is NaiveBean -> {
                         initPlugin("naive-plugin")
-                        pluginConfigs[port] = profile.type to bean.buildNaiveConfig(port)
+                        pluginConfigs[port] = profile.type to bean.buildNaiveConfig(port, username, password)
                     }
                     is ShadowQUICBean -> {
                         initPlugin("shadowquic-plugin")
                         pluginConfigs[port] = profile.type to bean.buildShadowQUICConfig(
-                            port,
+                            port, username, password,
                             {
                                 File(app.noBackupFilesDir, "shadowquic_" + SystemClock.elapsedRealtime() + ".pem").apply {
                                     parentFile?.mkdirs()
@@ -97,19 +98,6 @@ abstract class V2RayInstance(
                                 }
                             }
                         )
-                    }
-                    is ConfigBean -> {
-                        when (bean.type) {
-                            "v2ray_outbound" -> {
-                            }
-                            else -> {
-                                externalInstances[port] = ExternalInstance(
-                                    profile, port
-                                ).apply {
-                                    init()
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -121,7 +109,8 @@ abstract class V2RayInstance(
     override fun launch() {
         val context = SagerNet.application
         for ((_, chain) in config.index) {
-            chain.entries.forEachIndexed { _, (port, profile) ->
+            chain.entries.forEachIndexed { _, (triple, profile) ->
+                val port = triple.first
                 val bean = profile.requireBean()
                 val (_, config) = pluginConfigs[port] ?: (0 to "")
                 val env = mutableMapOf<String, String>()
