@@ -152,24 +152,27 @@ fun parseV2RayOutbound(outbound: JsonObject): List<AbstractBean> {
                                         v2rayBean.allowInsecure = true
                                     }
                                 }
-                                /*tlsSettings.getString("echDohServer")?.also {
-                                    v2rayBean.echEnabled = true
-                                }
-                                tlsSettings.getString("echConfig")?.also {
-                                    v2rayBean.echEnabled = true
-                                    v2rayBean.echConfig = it
-                                }
-                                tlsSettings.getString("echConfigList")?.also {
-                                    v2rayBean.echEnabled = true
-                                    try {
-                                        Base64.getDecoder().decode(it)
+                                if (v2rayBean is VLESSBean) {
+                                    // Only parse ECH for shit VLESS free nodes
+                                    tlsSettings.getString("echDohServer")?.also {
+                                        v2rayBean.echEnabled = true
+                                    }
+                                    tlsSettings.getString("echConfig")?.also {
+                                        v2rayBean.echEnabled = true
                                         v2rayBean.echConfig = it
-                                    } catch (_: Exception) {}
+                                    }
+                                    tlsSettings.getString("echConfigList")?.also {
+                                        v2rayBean.echEnabled = true
+                                        try {
+                                            Base64.getDecoder().decode(it)
+                                            v2rayBean.echConfig = it
+                                        } catch (_: Exception) {}
+                                    }
+                                    tlsSettings.getObject("ech")?.also {
+                                        v2rayBean.echEnabled = it.getBoolean("enabled")
+                                        v2rayBean.echConfig = it.getString("config")
+                                    }
                                 }
-                                tlsSettings.getObject("ech")?.also {
-                                    v2rayBean.echEnabled = it.getBoolean("enabled")
-                                    v2rayBean.echConfig = it.getString("config")
-                                }*/
                             }
                         }
                         "reality" -> {
@@ -186,6 +189,9 @@ fun parseV2RayOutbound(outbound: JsonObject): List<AbstractBean> {
                                 }
                                 realitySettings.getString("shortId")?.also {
                                     v2rayBean.realityShortId = it
+                                }
+                                realitySettings.getString("mldsa65Verify")?.also {
+                                    v2rayBean.realityMldsa65Verify = it
                                 }
                             }
                         }

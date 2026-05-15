@@ -1489,12 +1489,14 @@ class ConfigurationFragment @JvmOverloads constructor(
             override suspend fun onUpdated(profileId: Long, trafficStats: TrafficStats) {
                 val index = configurationIdList.indexOf(profileId)
                 if (index != -1) {
-                    val holder = layoutManager.findViewByPosition(index)
-                        ?.let { configurationListView.getChildViewHolder(it) } as ConfigurationHolder?
-                    if (holder != null) {
-                        holder.entity.stats = trafficStats
+                    val profile = configurationList[profileId]
+                    if (profile != null) {
+                        profile.stats = trafficStats
                         onMainDispatcher {
-                            holder.bind(holder.entity)
+                            val holder = configurationListView.findViewHolderForAdapterPosition(index) as? ConfigurationHolder
+                            if (holder != null && holder.entity.id == profileId) {
+                                holder.updateTraffic(profile)
+                            }
                         }
                     }
                 }
@@ -1788,65 +1790,47 @@ class ConfigurationFragment @JvmOverloads constructor(
 
             }
 
-            fun showMoreMenu(anchor: View, proxyEntity: ProxyEntity, started: Boolean) {
-                val popup = PopupMenu(requireContext(), anchor)
-                popup.menuInflater.inflate(R.menu.profile_item_menu, popup.menu)
+            fun updateTraffic(proxyEntity: ProxyEntity) {
+                val parent = parent ?: return
+                if (!::entity.isInitialized) return
 
-                // Remove share menu items if not available
-                val shareItem = popup.menu.findItem(R.id.action_share)
-                if (shareItem != null && shareItem.hasSubMenu()) {
-                    if (!proxyEntity.hasShareLink() && proxyEntity.wgBean == null) {
-                        shareItem.subMenu?.removeItem(R.id.action_qr)
-                        shareItem.subMenu?.removeItem(R.id.action_clipboard)
-                    }
-                    if (!proxyEntity.canExportBackup()) {
-                        shareItem.subMenu?.removeItem(R.id.action_export_backup_clipboard)
-                    }
+                entity.stats = proxyEntity.stats
+
+                var rx = proxyEntity.rx
+                var tx = proxyEntity.tx
+
+                val stats = proxyEntity.stats
+                if (stats != null) {
+                    rx += stats.rxTotal
+                    tx += stats.txTotal
                 }
 
-                popup.setOnMenuItemClickListener { item ->
-                    when (item.itemId) {
-                        R.id.action_edit -> {
-                            proxyEntity.settingIntent(anchor.context, proxyGroup.type == GroupType.SUBSCRIPTION)?.let {
-                                editProfileLauncher.launch(it)
-                            }
-                        }
-                        R.id.action_delete -> {
-                            adapter.let {
-                                val index = it.configurationIdList.indexOf(proxyEntity.id)
-                                if (index >= 0) {
-                                    it.remove(index)
-                                    undoManager.remove(index to proxyEntity)
-                                }
-                            }
-                        }
-                        R.id.action_qr -> {
-                            if (proxyEntity.wgBean != null) {
-                                proxyEntity.wgBean?.toConf()?.let { showCode(it) }
-                            } else {
-                                proxyEntity.toLink()?.let { showCode(it) }
-                            }
-                        }
-                        R.id.action_clipboard -> {
-                            if (proxyEntity.wgBean != null) {
-                                proxyEntity.wgBean?.toConf()?.let { export(it) }
-                            } else {
-                                proxyEntity.toLink()?.let { export(it) }
-                            }
-                        }
-                        R.id.action_export_config_clipboard -> export(proxyEntity.exportConfig().first)
-                        R.id.action_export_config_file -> {
-                            val cfg = proxyEntity.exportConfig()
-                            DataStore.serverConfig = cfg.first
-                            startFilesForResult(
-                                (parentFragment as ConfigurationFragment).exportConfig, cfg.second
-                            )
-                        }
-                        R.id.action_export_backup_clipboard -> export(proxyEntity.requireBean().exportBackup())
-                    }
-                    true
+                val showTraffic = rx + tx != 0L
+                trafficText.isVisible = showTraffic
+                if (showTraffic) {
+                    trafficText.text = view.context.getString(
+                        R.string.traffic,
+                        FormatFileSizeCompat.formatFileSize(view.context, tx, DataStore.useIECUnit),
+                        FormatFileSizeCompat.formatFileSize(view.context, rx, DataStore.useIECUnit)
+                    )
                 }
-                popup.show()
+
+                var address = proxyEntity.displayAddress()
+                if (proxyEntity.requireBean().name.isEmpty() || !parent.alwaysShowAddress) {
+                    address = ""
+                }
+
+                (trafficText.parent as View).isGone = (!showTraffic || proxyEntity.status <= 0) && address.isEmpty()
+
+                if (proxyEntity.status <= 0) {
+                    if (showTraffic) {
+                        profileStatus.text = trafficText.text
+                        profileStatus.setTextColor(requireContext().getColorAttr(android.R.attr.textColorSecondary))
+                        trafficText.text = ""
+                    } else {
+                        profileStatus.text = ""
+                    }
+                }
             }
 
             fun showCode(link: String) {

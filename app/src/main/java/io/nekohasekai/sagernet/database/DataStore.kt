@@ -247,6 +247,7 @@ object DataStore : OnPreferenceDataStoreChangeListener {
     var socksUsername by configurationStore.string(Key.SOCKS_USERNAME)
     var socksPassword by configurationStore.string(Key.SOCKS_PASSWORD)
     var socksUDP by configurationStore.boolean(Key.SOCKS_UDP) { true }
+    var socksUDPWarningDisable by configurationStore.boolean(Key.SOCKS_UDP_WARNING_DISABLE)
     var requireHttp by configurationStore.boolean(Key.REQUIRE_HTTP) { false }
     var httpUsername by configurationStore.string(Key.HTTP_USERNAME)
     var httpPassword by configurationStore.string(Key.HTTP_PASSWORD)
@@ -327,6 +328,7 @@ object DataStore : OnPreferenceDataStoreChangeListener {
     var serverEchConfig by profileCacheStore.string(Key.SERVER_ECH_CONFIG)
     var serverRealityPublicKey by profileCacheStore.string(Key.SERVER_REALITY_PUBLIC_KEY)
     var serverRealityShortId by profileCacheStore.string(Key.SERVER_REALITY_SHORT_ID)
+    var serverRealityMldsa65Verify by profileCacheStore.string(Key.SERVER_REALITY_MLDSA65_VERIFY)
     var serverRealityFingerprint by profileCacheStore.string(Key.SERVER_REALITY_FINGERPRINT)
     var serverRealityDisableX25519Mlkem768 by profileCacheStore.boolean(Key.SERVER_REALITY_DISABLE_X25519MLKEM768)
     var serverGrpcServiceNameCompat by profileCacheStore.boolean(Key.SERVER_GRPC_SERVICE_NAME_COMPAT)

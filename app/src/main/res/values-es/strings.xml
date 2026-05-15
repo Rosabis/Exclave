@@ -69,7 +69,7 @@
     <string name="group_name">Nombre del grupo</string>
     <string name="group_create">Crear grupo</string>
     <string name="group_edit">Editar grupo</string>
-    <string name="raw">Raw</string>
+    <string name="raw">Crudo</string>
     <string name="deduplication_sum">Elimina configuraciones duplicadas al actualizar</string>
     <string name="clipboard_empty">El portapapeles está vacío</string>
     <string name="connect">Conectar</string>
@@ -398,7 +398,7 @@
     <string name="tuic_udp_relay_mode">Modo de retransmisión UDP</string>
     <string name="congestion_control">Control de congestión</string>
     <string name="tuic_disable_sni">Desactivar SNI</string>
-    <string name="flow">Flow</string>
+    <string name="flow">Fluir</string>
     <string name="ws_max_early_data">Datos iniciales máximos</string>
     <string name="hijack_dns">Secuestrar DNS</string>
     <string name="reality_public_key">Clave pública REALITY</string>
@@ -576,4 +576,7 @@
     <string name="hysteria_hop_interval_max">Intervalo máximo de salto de puerto (s)</string>
     <string name="hysteria_bbr_profile">Perfil BBR</string>
     <string name="custom_package_name_or_uid">Nombre de paquete personalizado o UID</string>
+    <string name="balancer_use_landing_proxy">Usar proxy de aterrizaje de grupo</string>
+    <string name="balancer_use_front_proxy">Usar proxy frontal de grupo</string>
+    <string name="socks5_udp_authentication_warning">SOCKS5 UDP no está protegido por autenticación con nombre de usuario y contraseña. Si UDP está activado, la autenticación se puede eludir fácilmente.</string>
 </resources>

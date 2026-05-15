@@ -74,6 +74,7 @@ object Key {
     const val SOCKS_USERNAME = "socksUsername"
     const val SOCKS_PASSWORD = "socksPassword"
     const val SOCKS_UDP = "socksUDP"
+    const val SOCKS_UDP_WARNING_DISABLE = "socksUDPWarningDisable"
     const val REQUIRE_HTTP = "requireHttp"
     const val HTTP_USERNAME = "httpUsername"
     const val HTTP_PASSWORD = "httpPassword"
@@ -185,6 +186,7 @@ object Key {
 
     const val SERVER_REALITY_PUBLIC_KEY = "serverRealityPublicKey"
     const val SERVER_REALITY_SHORT_ID = "serverRealityShortId"
+    const val SERVER_REALITY_MLDSA65_VERIFY = "serverRealityMldsa65Verify"
     const val SERVER_REALITY_FINGERPRINT = "serverRealityFingerprint"
     const val SERVER_REALITY_DISABLE_X25519MLKEM768 = "serverRealityDisableX25519Mlkem768"
 
