@@ -1751,9 +1751,41 @@ class ConfigurationFragment @JvmOverloads constructor(
                         val isInsecure = DataStore.profileSecurityAdvisory && proxyEntity.requireBean().isInsecure
                         onMainDispatcher {
                             if (isDoubleColumn) {
-                                // Double column: show more menu icon
-                                moreIcon.setOnClickListener {
-                                    showMoreMenu(it, proxyEntity, started)
+                                moreIcon.setOnClickListener { view ->
+                                    val popup = PopupMenu(requireContext(), view)
+                                    popup.menuInflater.inflate(R.menu.profile_item_menu, popup.menu)
+
+                                    if (!proxyEntity.hasShareLink() && proxyEntity.wgBean == null) {
+                                        popup.menu.findItem(R.id.action_share)?.subMenu?.let { sub ->
+                                            sub.removeItem(R.id.action_qr)
+                                            sub.removeItem(R.id.action_clipboard)
+                                        }
+                                    }
+                                    if (!proxyEntity.canExportBackup()) {
+                                        popup.menu.findItem(R.id.action_share)?.subMenu?.removeItem(R.id.action_export_backup)
+                                    }
+
+                                    popup.setOnMenuItemClickListener { menuItem ->
+                                        when (menuItem.itemId) {
+                                            R.id.action_edit -> {
+                                                proxyEntity.settingIntent(view.context, proxyGroup.type == GroupType.SUBSCRIPTION)?.let {
+                                                    editProfileLauncher.launch(it)
+                                                }
+                                            }
+                                            R.id.action_delete -> {
+                                                adapter.let { a ->
+                                                    val index = a.configurationIdList.indexOf(proxyEntity.id)
+                                                    if (index >= 0) {
+                                                        a.remove(index)
+                                                        undoManager.remove(index to proxyEntity)
+                                                    }
+                                                }
+                                            }
+                                            else -> this@ConfigurationHolder.onMenuItemClick(menuItem)
+                                        }
+                                        true
+                                    }
+                                    popup.show()
                                 }
                             } else {
                                 // Single column: show original buttons

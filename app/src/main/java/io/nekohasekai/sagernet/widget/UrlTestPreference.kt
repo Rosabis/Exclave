@@ -5,7 +5,7 @@ import android.util.AttributeSet
 import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.core.view.isVisible
-import com.takisoft.preferencex.EditTextPreference
+import androidx.preference.EditTextPreference
 import io.nekohasekai.sagernet.R
 import io.nekohasekai.sagernet.database.DataStore
 
@@ -19,7 +19,7 @@ class UrlTestPreference : EditTextPreference {
     constructor(
         context: Context,
         attrs: AttributeSet?,
-    ) : this(context, attrs, com.takisoft.preferencex.R.attr.editTextPreferenceStyle)
+    ) : this(context, attrs, androidx.preference.R.attr.editTextPreferenceStyle)
 
     constructor(
         context: Context,
