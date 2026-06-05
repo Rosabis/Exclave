@@ -48,7 +48,7 @@ import io.nekohasekai.sagernet.fmt.v2ray.supportedXhttpMode
 import io.nekohasekai.sagernet.fmt.wireguard.WireGuardBean
 import io.nekohasekai.sagernet.ktx.*
 import kotlin.io.encoding.Base64
-import libsagernetcore.Libsagernetcore
+import libexclavecore.Libexclavecore
 
 fun parseClashProxies(proxies: List<Map<String, Any?>>): List<AbstractBean> {
     val beans = mutableListOf<AbstractBean>()
@@ -248,8 +248,8 @@ fun parseClashProxy(proxy: Map<String, Any?>): List<AbstractBean> {
                     bean.mtlsCertificate = cert
                     bean.mtlsCertificatePrivateKey = key
                 }
-                if (bean is VLESSBean) {
-                    // Only parse ECH for shit VLESS free nodes
+                if (bean is VLESSBean || bean is TrojanBean) {
+                    // Only parse ECH for shit VLESS or Trojan free nodes
                     proxy.getObject("ech-opts")?.also {
                         bean.echEnabled = it.getBoolean("enable")
                         bean.echConfig = it.getString("config")
@@ -340,7 +340,7 @@ fun parseClashProxy(proxy: Map<String, Any?>): List<AbstractBean> {
 
             proxy.getObject("reality-opts")?.also {
                 bean.security = "reality"
-                bean.realityPublicKey = it.getString("public-key")
+                bean.realityPublicKey = it.getString("public-key")?.ifEmpty { return listOf() }
                 bean.realityShortId = it.getString("short-id")
             }
 
@@ -352,6 +352,9 @@ fun parseClashProxy(proxy: Map<String, Any?>): List<AbstractBean> {
                 }
             }
             if (bean.type == "ws") {
+                // Fuck Xray ws and httpupgrade ALPN
+                // https://github.com/MetaCubeX/mihomo/blob/301d580d8ac7a1466633a2b3f0331bcf29c17735/component/tls/utls.go#L258-L283
+                bean.alpn = null
                 if (bean is TrojanBean && (bean.security == "tls" || bean.security == "reality") && !bean.sni.isNullOrEmpty()) {
                     bean.host = bean.sni
                 }
@@ -362,7 +365,7 @@ fun parseClashProxy(proxy: Map<String, Any?>): List<AbstractBean> {
                     bean.path = wsOpts.getString("path")
                     if (!bean.path.isNullOrEmpty()) {
                         try {
-                            val u = Libsagernetcore.parseURL(bean.path)
+                            val u = Libexclavecore.parseURL(bean.path)
                             u.queryParameter("ed")?.also { ed ->
                                 u.deleteQueryParameter("ed")
                                 bean.path = u.string
@@ -543,6 +546,10 @@ fun parseClashProxy(proxy: Map<String, Any?>): List<AbstractBean> {
             })
         }
         "hysteria2" -> {
+            proxy.getObject("realm-opts")?.also { opts ->
+                // unsupported
+                if (opts.getBoolean("enable") == true) return listOf()
+            }
             return listOf(Hysteria2Bean().apply {
                 serverAddress = proxy.getString("server") ?: return listOf()
                 val port = proxy.getInt("port")?.takeIf { it > 0 }
@@ -582,7 +589,14 @@ fun parseClashProxy(proxy: Map<String, Any?>): List<AbstractBean> {
                     when (it) {
                         "" -> {}
                         "salamander" -> {
-                            obfs = proxy.getString("obfs-password")
+                            obfsType = "salamander"
+                            obfsPassword = proxy.getString("obfs-password")
+                        }
+                        "gecko" -> {
+                            obfsType = "gecko"
+                            obfsPassword = proxy.getString("obfs-password")
+                            geckoMinPacketSize = proxy.getInt("obfs-min-packet-size")?.takeIf { it > 0 }
+                            geckoMaxPacketSize = proxy.getInt("obfs-max-packet-size")?.takeIf { it > 0 }
                         }
                         else -> return listOf()
                     }

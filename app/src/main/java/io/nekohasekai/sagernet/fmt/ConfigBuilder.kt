@@ -32,7 +32,6 @@ import io.nekohasekai.sagernet.Key
 import io.nekohasekai.sagernet.LogLevel
 import io.nekohasekai.sagernet.RouteMode
 import io.nekohasekai.sagernet.SagerNet
-import io.nekohasekai.sagernet.Shadowsocks2022Implementation
 import io.nekohasekai.sagernet.TLS_FRAGMENTATION_METHOD
 import io.nekohasekai.sagernet.TunImplementation
 import io.nekohasekai.sagernet.bg.VpnService
@@ -89,9 +88,8 @@ import io.nekohasekai.sagernet.fmt.v2ray.V2RayConfig.RealityObject
 import io.nekohasekai.sagernet.fmt.v2ray.V2RayConfig.ReverseObject
 import io.nekohasekai.sagernet.fmt.v2ray.V2RayConfig.RoutingObject
 import io.nekohasekai.sagernet.fmt.v2ray.V2RayConfig.RoutingObject.BalancerObject.StrategyObject
-import io.nekohasekai.sagernet.fmt.v2ray.V2RayConfig.SSHOutbountConfigurationObject
+import io.nekohasekai.sagernet.fmt.v2ray.V2RayConfig.SSHOutboundConfigurationObject
 import io.nekohasekai.sagernet.fmt.v2ray.V2RayConfig.ShadowsocksOutboundConfigurationObject
-import io.nekohasekai.sagernet.fmt.v2ray.V2RayConfig.Shadowsocks_2022OutboundConfigurationObject
 import io.nekohasekai.sagernet.fmt.v2ray.V2RayConfig.SocksInboundConfigurationObject
 import io.nekohasekai.sagernet.fmt.v2ray.V2RayConfig.SocksOutboundConfigurationObject
 import io.nekohasekai.sagernet.fmt.v2ray.V2RayConfig.SplitHTTPObject
@@ -125,7 +123,7 @@ import io.nekohasekai.sagernet.ktx.unescapeLineFeed
 import io.nekohasekai.sagernet.ktx.uuidOrGenerate
 import io.nekohasekai.sagernet.utils.PackageCache
 import kotlin.io.encoding.Base64
-import libsagernetcore.Libsagernetcore
+import libexclavecore.Libexclavecore
 import java.io.File
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -531,10 +529,10 @@ fun buildV2RayConfig(
                     // but this is not the main function of this software, just keep it broken
                     if (bean.security == "none" && bean.host.isNotEmpty()) {
                         val host = try {
-                            val u = Libsagernetcore.newURL("placeholder").apply {
-                                rawHost = if (Libsagernetcore.isIPv6(bean.host)) "[${bean.host}]" else bean.host
+                            val u = Libexclavecore.newURL("placeholder").apply {
+                                rawHost = if (Libexclavecore.isIPv6(bean.host)) "[${bean.host}]" else bean.host
                             }.string
-                            Libsagernetcore.parseURL(u).host
+                            Libexclavecore.parseURL(u).host
                         } catch (_: Exception) {
                             bean.host
                         }
@@ -542,7 +540,7 @@ fun buildV2RayConfig(
                             type = "field"
                             outboundTag = TAG_DIRECT
                             port = bean.serverPort.toString()
-                            if (Libsagernetcore.isIP(host)) {
+                            if (Libexclavecore.isIP(host)) {
                                 ip = listOf(host)
                                 if (DataStore.domainStrategy != "AsIs") {
                                     skipDomain = true
@@ -557,7 +555,7 @@ fun buildV2RayConfig(
                             type = "field"
                             outboundTag = TAG_DIRECT
                             port = bean.serverPort.toString()
-                            if (!Libsagernetcore.isIP(bean.sni)) {
+                            if (!Libexclavecore.isIP(bean.sni)) {
                                 domains = listOf(bean.sni)
                             }
                         }
@@ -567,7 +565,7 @@ fun buildV2RayConfig(
                             type = "field"
                             outboundTag = TAG_DIRECT
                             port = bean.serverPort.toString()
-                            if (Libsagernetcore.isIP(bean.serverAddress)) {
+                            if (Libexclavecore.isIP(bean.serverAddress)) {
                                 ip = listOf(bean.serverAddress)
                                 if (DataStore.domainStrategy != "AsIs") {
                                     skipDomain = true
@@ -746,23 +744,16 @@ fun buildV2RayConfig(
                                                 })
                                         })
                                 } else if (bean is ShadowsocksBean) {
-                                    if (bean.method.startsWith("2022-blake3-") && DataStore.shadowsocks2022Implementation == Shadowsocks2022Implementation.V2FLY_V2RAY_CORE) {
-                                        protocol = "shadowsocks2022"
-                                        settings = LazyOutboundConfigurationObject(this,
-                                            Shadowsocks_2022OutboundConfigurationObject().apply {
+                                    protocol = "shadowsocks"
+                                    settings = LazyOutboundConfigurationObject(this,
+                                        ShadowsocksOutboundConfigurationObject().apply {
+                                            servers = listOf(ShadowsocksOutboundConfigurationObject.ServerObject().apply {
                                                 address = bean.serverAddress
                                                 port = bean.serverPort
+                                                password = bean.password
                                                 method = bean.method
-                                                val keys = bean.password.split(":")
-                                                if (keys.size == 1) {
-                                                    psk = keys[0]
-                                                }
-                                                if (keys.size > 1) {
-                                                    ipsk = mutableListOf()
-                                                    for (i in 0..(keys.size - 2)) {
-                                                        ipsk.add(keys[i])
-                                                    }
-                                                    psk = keys[keys.size - 1]
+                                                if (!bean.method.startsWith("2022-blake3-") && bean.experimentReducedIvHeadEntropy) {
+                                                    experimentReducedIvHeadEntropy = bean.experimentReducedIvHeadEntropy
                                                 }
                                                 if (bean.plugin.isNotEmpty()) {
                                                     val pluginConfiguration = PluginConfiguration(bean.plugin)
@@ -805,65 +796,9 @@ fun buildV2RayConfig(
                                                 if (bean.singUoT && DataStore.experimentalFlagsProperties.getBooleanProperty( "singuot")) {
                                                     uot = bean.singUoT
                                                 }
-                                            }
-                                        )
-                                    } else {
-                                        protocol = "shadowsocks"
-                                        settings = LazyOutboundConfigurationObject(this,
-                                            ShadowsocksOutboundConfigurationObject().apply {
-                                                servers = listOf(ShadowsocksOutboundConfigurationObject.ServerObject().apply {
-                                                    address = bean.serverAddress
-                                                    port = bean.serverPort
-                                                    password = bean.password
-                                                        method = bean.method
-                                                    if (!bean.method.startsWith("2022-blake3-") && bean.experimentReducedIvHeadEntropy) {
-                                                        experimentReducedIvHeadEntropy = bean.experimentReducedIvHeadEntropy
-                                                    }
-                                                    if (bean.plugin.isNotEmpty()) {
-                                                        val pluginConfiguration = PluginConfiguration(bean.plugin)
-                                                        if (pluginConfiguration.selected.isNotEmpty()) {
-                                                            plugin = pluginConfiguration.selected
-                                                            pluginOpts = pluginConfiguration.getOptions().toString()
-                                                            if (!forExport
-                                                                && !(plugin == "v2ray-plugin" && DataStore.experimentalFlagsProperties.getBooleanProperty("useInternalV2RayPlugin"))
-                                                                && !(plugin == "obfs-local" && DataStore.experimentalFlagsProperties.getBooleanProperty("useInternalObfsLocal"))
-                                                            ) {
-                                                                try {
-                                                                    PluginManager.init(pluginConfiguration)?.let { (path, opts, isV2) ->
-                                                                        plugin = path
-                                                                        val shouldProtect = if (forTest) {
-                                                                            DataStore.serviceMode == Key.MODE_VPN && DataStore.tunImplementation == TunImplementation.SYSTEM && DataStore.startedProfile > 0 && SagerNet.started
-                                                                        } else {
-                                                                            DataStore.serviceMode == Key.MODE_VPN && DataStore.tunImplementation == TunImplementation.SYSTEM
-                                                                        }
-                                                                        if (shouldProtect) {
-                                                                            pluginWorkingDir = SagerNet.deviceStorage.noBackupFilesDir.toString()
-                                                                            if (isV2) {
-                                                                                opts["__android_vpn"] = ""
-                                                                            } else {
-                                                                                pluginArgs = listOf("-V")
-                                                                            }
-                                                                        }
-                                                                        pluginOpts = opts.toString()
-                                                                    }
-                                                                } catch (e: PluginManager.PluginNotFoundException) {
-                                                                    if (e.plugin in arrayOf("v2ray-plugin", "obfs-local")) {
-                                                                        plugin = e.plugin
-                                                                        pluginOpts = pluginConfiguration.getOptions().toString()
-                                                                    } else {
-                                                                        throw e
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    if (bean.singUoT && DataStore.experimentalFlagsProperties.getBooleanProperty( "singuot")) {
-                                                        uot = bean.singUoT
-                                                    }
-                                                })
-                                            }
-                                        )
-                                    }
+                                            })
+                                        }
+                                    )
                                 } else if (bean is SOCKSBean) {
                                     protocol = "socks"
                                     settings = LazyOutboundConfigurationObject(this,
@@ -952,7 +887,10 @@ fun buildV2RayConfig(
                                                 if (bean.allowInsecure) {
                                                     allowInsecure = true
                                                 }
-                                                if (bean.utlsFingerprint.isNotEmpty()) {
+                                                val overrideFingerprint = DataStore.experimentalFlagsProperties.getProperty("overrideUTLSFingerprintForTLS")
+                                                if (!overrideFingerprint.isNullOrEmpty()) {
+                                                    fingerprint = overrideFingerprint
+                                                } else if (bean.utlsFingerprint.isNotEmpty()) {
                                                     fingerprint = bean.utlsFingerprint
                                                 }
                                                 if (bean.echEnabled) {
@@ -979,7 +917,10 @@ fun buildV2RayConfig(
                                                 if (bean.realityMldsa65Verify.isNotEmpty()) {
                                                     mldsa65Verify = bean.realityMldsa65Verify
                                                 }
-                                                if (bean.realityFingerprint.isNotEmpty()) {
+                                                val overrideFingerprint = DataStore.experimentalFlagsProperties.getProperty("overrideUTLSFingerprintForREALITY")
+                                                if (!overrideFingerprint.isNullOrEmpty()) {
+                                                    fingerprint = overrideFingerprint
+                                                } else if (bean.realityFingerprint.isNotEmpty()) {
                                                     fingerprint = bean.realityFingerprint
                                                 }
                                                 if (DataStore.realityDisableX25519Mlkem768 || bean.realityDisableX25519Mlkem768 && !forExport) {
@@ -1234,6 +1175,8 @@ fun buildV2RayConfig(
                                         }
                                         "hysteria2" -> {
                                             hy2Settings = Hysteria2Object().apply {
+                                                // V2Ray transport is TCP only so it is safe to omit MaxDatagramFrameSize.
+                                                omitMaxDatagramFrameSize = true
                                                 if (bean.hy2Password.isNotEmpty()) {
                                                     password = bean.hy2Password
                                                 }
@@ -1358,7 +1301,7 @@ fun buildV2RayConfig(
                             } else if (bean is SSHBean) {
                                 protocol = "ssh"
                                 settings = LazyOutboundConfigurationObject(this,
-                                    SSHOutbountConfigurationObject().apply {
+                                    SSHOutboundConfigurationObject().apply {
                                         address = bean.serverAddress
                                         port = bean.serverPort
                                         user = bean.username
@@ -1376,6 +1319,9 @@ fun buildV2RayConfig(
                                         if (bean.publicKey.isNotEmpty()) {
                                             publicKey = bean.publicKey
                                         }
+                                        if (bean.keepaliveInterval > 0) {
+                                            keepaliveInterval = bean.keepaliveInterval
+                                        }
                                     })
                             } else if (bean is Hysteria2Bean) {
                                 protocol = "hysteria2"
@@ -1392,6 +1338,9 @@ fun buildV2RayConfig(
                                     security = "tls"
                                     hy2Settings = Hysteria2Object().apply {
                                         use_udp_extension = true
+                                        if (DataStore.hysteria2OmitMaxDatagramFrameSize || bean.omitMaxDatagramFrameSize) {
+                                            omitMaxDatagramFrameSize = true
+                                        }
                                         if (bean.auth.isNotEmpty()) {
                                             password = bean.auth
                                         }
@@ -1407,10 +1356,18 @@ fun buildV2RayConfig(
                                                 bbrProfile = bean.bbrProfile
                                             }
                                         }
-                                        if (bean.obfs.isNotEmpty()) {
+                                        if (bean.obfsType.isNotEmpty()) {
                                             obfs = Hysteria2Object.OBFSObject().apply {
-                                                type = "salamander"
-                                                password = bean.obfs
+                                                type = bean.obfsType
+                                                password = bean.obfsPassword
+                                                if (bean.obfsType == "gecko") {
+                                                    if (bean.geckoMinPacketSize > 0) {
+                                                        minPacketSize = bean.geckoMinPacketSize
+                                                    }
+                                                    if (bean.geckoMaxPacketSize > 0) {
+                                                        maxPacketSize = bean.geckoMaxPacketSize
+                                                    }
+                                                }
                                             }
                                         }
                                         if (bean.serverPorts.isNotEmpty() && bean.serverPorts.isValidHysteriaMultiPort()) {
@@ -1683,7 +1640,10 @@ fun buildV2RayConfig(
                                                 if (bean.allowInsecure) {
                                                     allowInsecure = true
                                                 }
-                                                if (bean.utlsFingerprint.isNotEmpty()) {
+                                                val overrideFingerprint = DataStore.experimentalFlagsProperties.getProperty("overrideUTLSFingerprintForTLS")
+                                                if (!overrideFingerprint.isNullOrEmpty()) {
+                                                    fingerprint = overrideFingerprint
+                                                } else if (bean.utlsFingerprint.isNotEmpty()) {
                                                     fingerprint = bean.utlsFingerprint
                                                 }
                                                 if (bean.echEnabled) {
@@ -1707,7 +1667,10 @@ fun buildV2RayConfig(
                                                 if (bean.realityShortId.isNotEmpty()) {
                                                     shortId = bean.realityShortId
                                                 }
-                                                if (bean.realityFingerprint.isNotEmpty()) {
+                                                val overrideFingerprint = DataStore.experimentalFlagsProperties.getProperty("overrideUTLSFingerprintForREALITY")
+                                                if (!overrideFingerprint.isNullOrEmpty()) {
+                                                    fingerprint = overrideFingerprint
+                                                } else if (bean.realityFingerprint.isNotEmpty()) {
                                                     fingerprint = bean.realityFingerprint
                                                 }
                                                 if (DataStore.realityDisableX25519Mlkem768 || bean.realityDisableX25519Mlkem768 && !forExport) {
@@ -1892,6 +1855,12 @@ fun buildV2RayConfig(
                                         }
                                         if (bean.allowInsecure) {
                                             allowInsecure = true
+                                        }
+                                        val overrideFingerprint = DataStore.experimentalFlagsProperties.getProperty("overrideUTLSFingerprintForTLS")
+                                        if (!overrideFingerprint.isNullOrEmpty()) {
+                                            fingerprint = overrideFingerprint
+                                        } else if (bean.utlsFingerprint.isNotEmpty()) {
+                                            fingerprint = bean.utlsFingerprint
                                         }
                                         if (bean.echEnabled) {
                                             ech = TLSObject.ECHObject().apply {
@@ -2506,48 +2475,48 @@ fun buildV2RayConfig(
                     bean.serverAddresses.listByLineOrComma().forEach {
                         when {
                             it.isEmpty() -> {}
-                            !Libsagernetcore.isIP(it) -> {
+                            !Libexclavecore.isIP(it) -> {
                                 bypassDomainSkipFakeDns.add("full:$it")
                             }
                         }
                     }
                 } else {
-                    if (!Libsagernetcore.isIP(serverAddress)) {
+                    if (!Libexclavecore.isIP(serverAddress)) {
                         bypassDomainSkipFakeDns.add("full:$serverAddress")
                     }
                     when (bean) {
                         is StandardV2RayBean -> {
-                            if (bean.echEnabled && bean.echConfig.isEmpty() && !Libsagernetcore.isIP(bean.sni)) {
+                            if (bean.echEnabled && bean.echConfig.isEmpty() && !Libexclavecore.isIP(bean.sni)) {
                                 bypassDomainSkipFakeDns.add("full:${bean.sni}")
                             }
                         }
                         is AnyTLSBean -> {
-                            if (bean.echEnabled && bean.echConfig.isEmpty() && !Libsagernetcore.isIP(bean.sni)) {
+                            if (bean.echEnabled && bean.echConfig.isEmpty() && !Libexclavecore.isIP(bean.sni)) {
                                 bypassDomainSkipFakeDns.add("full:${bean.sni}")
                             }
                         }
                         is Http3Bean -> {
-                            if (bean.echEnabled && bean.echConfig.isEmpty() && !Libsagernetcore.isIP(bean.sni)) {
+                            if (bean.echEnabled && bean.echConfig.isEmpty() && !Libexclavecore.isIP(bean.sni)) {
                                 bypassDomainSkipFakeDns.add("full:${bean.sni}")
                             }
                         }
                         is Hysteria2Bean -> {
-                            if (bean.echEnabled && bean.echConfig.isEmpty() && !Libsagernetcore.isIP(bean.sni)) {
+                            if (bean.echEnabled && bean.echConfig.isEmpty() && !Libexclavecore.isIP(bean.sni)) {
                                 bypassDomainSkipFakeDns.add("full:${bean.sni}")
                             }
                         }
                         is JuicityBean -> {
-                            if (bean.echEnabled && bean.echConfig.isEmpty() && !Libsagernetcore.isIP(bean.sni)) {
+                            if (bean.echEnabled && bean.echConfig.isEmpty() && !Libexclavecore.isIP(bean.sni)) {
                                 bypassDomainSkipFakeDns.add("full:${bean.sni}")
                             }
                         }
                         is Tuic5Bean -> {
-                            if (bean.echEnabled && bean.echConfig.isEmpty() && !Libsagernetcore.isIP(bean.sni)) {
+                            if (bean.echEnabled && bean.echConfig.isEmpty() && !Libexclavecore.isIP(bean.sni)) {
                                 bypassDomainSkipFakeDns.add("full:${bean.sni}")
                             }
                         }
                         is TrustTunnelBean -> {
-                            if (bean.echEnabled && bean.echConfig.isEmpty() && !Libsagernetcore.isIP(bean.sni)) {
+                            if (bean.echEnabled && bean.echConfig.isEmpty() && !Libexclavecore.isIP(bean.sni)) {
                                 bypassDomainSkipFakeDns.add("full:${bean.sni}")
                             }
                         }
@@ -2587,11 +2556,11 @@ fun buildV2RayConfig(
             try {
                 if (it.lowercase() != "localhost" && it.lowercase() != "fakedns") {
                     if (it.contains("://")) {
-                        val url = Libsagernetcore.parseURL(it)
-                        if (!Libsagernetcore.isIP(url.host)) {
+                        val url = Libexclavecore.parseURL(it)
+                        if (!Libexclavecore.isIP(url.host)) {
                             bypassDomainSkipFakeDns.add("full:${url.host}")
                         }
-                    } else if (!Libsagernetcore.isIP(it)) {
+                    } else if (!Libexclavecore.isIP(it)) {
                         bypassDomainSkipFakeDns.add("full:$it")
                     }
                 }
@@ -2602,11 +2571,11 @@ fun buildV2RayConfig(
             try {
                 if (it.lowercase() != "localhost" && it.lowercase() != "fakedns") {
                     if (it.contains("://")) {
-                        val url = Libsagernetcore.parseURL(it)
-                        if (!Libsagernetcore.isIP(url.host)) {
+                        val url = Libexclavecore.parseURL(it)
+                        if (!Libexclavecore.isIP(url.host)) {
                             bootstrapDomain.add("full:${url.host}")
                         }
-                    } else if (!Libsagernetcore.isIP(it)) {
+                    } else if (!Libexclavecore.isIP(it)) {
                         bootstrapDomain.add("full:$it")
                     }
                 }

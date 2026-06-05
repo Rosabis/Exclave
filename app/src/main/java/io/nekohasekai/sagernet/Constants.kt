@@ -105,7 +105,6 @@ object Key {
     const val ALWAYS_SHOW_ADDRESS = "alwaysShowAddress"
     const val SHOW_GROUP_NAME = "showGroupName"
 
-    const val SHADOWSOCKS_2022_IMPLEMENTATION = "shadowsocks2022Implementation"
     const val PROVIDER_ROOT_CA = "providerRootCA"
 
     const val INTERRUPT_REUSED_CONNECTIONS = "interruptReusedConnections0"
@@ -125,6 +124,7 @@ object Key {
     const val ENABLE_FRAGMENT_FOR_DIRECT = "enableFragmentForDirect"
     const val FRAGMENT_METHOD = "fragmentMethod"
     const val REALITY_DISABLE_X25519MLKEM768 = "realityDisableX25519Mlkem768"
+    const val HYSTERIA2_OMIT_MAX_DATAGRAM_FRAME_SIZE = "hysteria2OmitMaxDatagramFrameSize"
     const val GRPC_SERVICE_NAME_COMPAT = "grpcServiceNameCompat"
     const val PROFILE_SECURITY_ADVISORY = "profileSecurityAdvisory"
 
@@ -238,12 +238,17 @@ object Key {
     const val SERVER_ANYTLS_IDLE_SESSION_TIMEOUT = "serverAnyTLSIdleSessionTimeout"
     const val SERVER_ANYTLS_MIN_IDLE_SESSION = "serverAnyTLSMinIdleSession"
     const val SERVER_TRUSTTUNNEL_SERVER_NAME_TO_VERIFY = "serverTrustTunnelServerNameToVerify"
+    const val SERVER_HYSTERIA2_OMIT_MAX_DATAGRAM_FRAME_SIZE = "serverHysteria2OmitMaxDatagramFrameSize"
+    const val SERVER_SSH_KEEPALIVE_INTERVAL = "serverSSHKeepaliveInterval"
 
     const val SERVER_PORTS = "serverPorts"
     const val SERVER_HOP_INTERVAL = "serverHopInterval"
     const val SERVER_HOP_INTERVAL_MIN = "serverHopIntervalMin"
     const val SERVER_HOP_INTERVAL_MAX = "serverHopIntervalMax"
     const val SERVER_HYSTERIA2_BBR_PROFILE = "serverHysteria2BBRProfile"
+    const val SERVER_HYSTERIA2_OBFS_TYPE = "serverHysteria2ObfsType"
+    const val SERVER_HYSTERIA2_GECKO_MIN_PACKET_SIZE = "serverHysteria2GeckoMinPacketSize"
+    const val SERVER_HYSTERIA2_GECKO_MAX_PACKET_SIZE = "serverHysteria2GeckoMaxPacketSize"
 
     const val SERVER_NAIVE_NO_POST_QUANTUM = "serverNaiveNoPostQuantum"
     const val SERVER_SHADOWQUIC_DISABLE_ALPN = "serverShadowQUICDisableALPN"
@@ -311,6 +316,8 @@ object Key {
     const val SUBSCRIPTION_EXPIRY_DATE = "subscriptionExpiryDate"
     const val SUBSCRIPTION_NAME_FILTER = "subscriptionNameFilter"
     const val SUBSCRIPTION_NAME_FILTER1 = "subscriptionNameFilter1"
+    const val SUBSCRIPTION_HTTP_HEADERS = "subscriptionHTTPHeaders"
+    const val SUBSCRIPTION_AGE_PRIVATE_KEY = "subscriptionAgePrivateKey"
 
     const val EDITING_ASSET_NAME = "editingAssetName"
     const val ASSET_NAME = "assetName"
@@ -330,11 +337,6 @@ object TunImplementation {
     const val SYSTEM = 1
 }
 
-object Shadowsocks2022Implementation {
-    const val SAGERNET_SING_SHADOWSOCKS2 = 0
-    const val V2FLY_V2RAY_CORE = 1
-}
-
 object RootCAProvider {
     const val MOZILLA = 0
     const val SYSTEM = 1
@@ -351,6 +353,7 @@ object SubscriptionType {
     const val RAW = 0
     const val OOCv1 = 1 // removed
     const val SIP008 = 2
+    const val AGE = 3
 }
 
 object ExtraType {

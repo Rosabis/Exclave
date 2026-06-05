@@ -24,7 +24,7 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import io.nekohasekai.sagernet.fmt.trojan.TrojanBean
 import io.nekohasekai.sagernet.ktx.*
-import libsagernetcore.Libsagernetcore
+import libexclavecore.Libexclavecore
 import java.util.Base64
 
 val supportedVmessMethod = arrayOf(
@@ -62,7 +62,7 @@ val nonRawTransportName = arrayOf(
 fun parseV2Ray(link: String): StandardV2RayBean {
     // https://github.com/XTLS/Xray-core/issues/91
     // https://github.com/XTLS/Xray-core/discussions/716
-    val url = Libsagernetcore.parseURL(link)
+    val url = Libexclavecore.parseURL(link)
     val bean = when (url.scheme) {
         "vmess" -> VMessBean()
         "vless" -> VLESSBean()
@@ -221,8 +221,8 @@ fun parseV2Ray(link: String): StandardV2RayBean {
                     bean.allowInsecure = true
                 }
             }
-            if (url.scheme == "vless") {
-                // Only parse ECH for shit VLESS free nodes
+            if (url.scheme == "vless" || url.scheme == "trojan") {
+                // Only parse ECH for shit VLESS or Trojan free nodes
                 url.queryParameter("ech")?.let {
                     bean.echEnabled = true
                     try {
@@ -236,7 +236,7 @@ fun parseV2Ray(link: String): StandardV2RayBean {
             url.queryParameterNotBlank("sni")?.let {
                 bean.sni = it
             }
-            url.queryParameterNotBlank("pbk")?.let {
+            url.queryParameterNotBlank("pbk")?.ifEmpty { error("empty reality public key") }?.let {
                 bean.realityPublicKey = it
             }
             url.queryParameterNotBlank("sid")?.let {
@@ -323,6 +323,9 @@ fun parseV2Ray(link: String): StandardV2RayBean {
             }
         }
         "httpupgrade" -> {
+            // Fuck Xray httpupgrade ALPN
+            // https://github.com/XTLS/Xray-core/blob/1bdb488c9ec09ea51e6899697d5b7437f3cf6eb2/transport/internet/tls/tls.go#L94-L131
+            bean.alpn = null
             url.queryParameterNotBlank("host")?.let {
                 // will not follow the breaking change in
                 // https://github.com/XTLS/Xray-core/commit/a2b773135a860f63e990874c551b099dfc888471
@@ -332,7 +335,7 @@ fun parseV2Ray(link: String): StandardV2RayBean {
                 bean.path = path
                 try {
                     // RPRX's smart-assed invention. This of course will break under some conditions.
-                    val u = Libsagernetcore.parseURL(path)
+                    val u = Libexclavecore.parseURL(path)
                     u.queryParameter("ed")?.let {
                         u.deleteQueryParameter("ed")
                         bean.path = u.string
@@ -347,6 +350,9 @@ fun parseV2Ray(link: String): StandardV2RayBean {
             }
         }
         "ws" -> {
+            // Fuck Xray ws ALPN
+            // https://github.com/XTLS/Xray-core/blob/1bdb488c9ec09ea51e6899697d5b7437f3cf6eb2/transport/internet/tls/tls.go#L94-L131
+            bean.alpn = null
             url.queryParameterNotBlank("host")?.let {
                 // will not follow the breaking change in
                 // https://github.com/XTLS/Xray-core/commit/a2b773135a860f63e990874c551b099dfc888471
@@ -356,7 +362,7 @@ fun parseV2Ray(link: String): StandardV2RayBean {
                 bean.path = path
                 try {
                     // RPRX's smart-assed invention. This of course will break under some conditions.
-                    val u = Libsagernetcore.parseURL(path)
+                    val u = Libexclavecore.parseURL(path)
                     u.queryParameter("ed")?.let { ed ->
                         u.deleteQueryParameter("ed")
                         bean.path = u.string
@@ -542,7 +548,7 @@ private fun parseV2RayN(json: JsonObject): VMessBean {
             bean.path = path
             try {
                 // RPRX's smart-assed invention. This of course will break under some conditions.
-                val u = Libsagernetcore.parseURL(bean.path)
+                val u = Libexclavecore.parseURL(bean.path)
                 u.queryParameter("ed")?.let { ed ->
                     u.deleteQueryParameter("ed")
                     bean.path = u.string
@@ -556,7 +562,7 @@ private fun parseV2RayN(json: JsonObject): VMessBean {
             bean.path = path
             try {
                 // RPRX's smart-assed invention. This of course will break under some conditions.
-                val u = Libsagernetcore.parseURL(bean.path)
+                val u = Libexclavecore.parseURL(bean.path)
                 u.queryParameter("ed")?.let {
                     u.deleteQueryParameter("ed")
                     bean.path = u.string
@@ -600,7 +606,7 @@ private fun parseV2RayN(json: JsonObject): VMessBean {
     }
 
     when (val security = json.getString("tls")) {
-        "tls", "reality" -> {
+        "tls" -> {
             bean.security = security
             bean.name = json.getString("ps")?.takeIf { it.isNotEmpty() }
             // See https://github.com/2dust/v2rayNG/blob/5db2df77a01144b8f3d40116f8c183153f181d05/V2rayNG/app/src/main/java/com/v2ray/ang/handler/V2rayConfigManager.kt#L1077-L1242
@@ -612,6 +618,9 @@ private fun parseV2RayN(json: JsonObject): VMessBean {
             json.getInt("insecure")?.takeIf { it == 1 }?.let {
                 bean.allowInsecure = true
             }
+        }
+        "reality" -> {
+            error("v2rayN(G) style link lacks REALITY public key support and does not work at all.")
         }
         else -> bean.security = "none"
     }
@@ -641,7 +650,7 @@ private fun parseV2RayN(json: JsonObject): VMessBean {
 }
 
 fun StandardV2RayBean.toUri(): String? {
-    val builder = Libsagernetcore.newURL(
+    val builder = Libexclavecore.newURL(
         when (this) {
             is VMessBean -> "vmess"
             is VLESSBean -> "vless"

@@ -459,7 +459,6 @@
     <string name="reality_short_id">REALITY Short ID</string>
     <string name="reality_fingerprint">REALITY uTLS fingerprint</string>
     <string name="wireguard_reserved">Reserved</string>
-    <string name="shadowsocks_2022_implementation">Shadowsocks 2022 implementation</string>
     <string name="bootstrap_dns">Bootstrap DNS</string>
     <string name="use_local_dns_as_bootstrap_dns">Use system DNS as Bootstrap DNS</string>
     <string name="brook_fragment">Fragment</string>
@@ -623,4 +622,11 @@
     <string name="udp" translatable="false">UDP</string>
     <string name="reality_mldsa65_verify" translatable="false">REALITY mldsa65Verify</string>
     <string name="socks5_udp_authentication_warning">SOCKS5 UDP is not protected by username/password authentication. If UDP is enabled, the authentication can be bypassed easily.</string>
+    <string name="enable_hysteria2_omit_max_datagram_frame_size">Enable Hysteria 2 OmitMaxDatagramFrameSize</string>
+    <string name="hysteria2_omit_max_datagram_frame_size" translatable="false">OmitMaxDatagramFrameSize</string>
+    <string name="hysteria2_omit_max_datagram_frame_size_sum">If the Hysteria 2 server does not support this breaking change, UDP will be unusable. This is a temporary option and may be removed in the future.</string>
+    <string name="ssh_keepalive_interval">Keepalive interval (s)</string>
+    <string name="custom_outbound">Custom outbound</string>
+    <string name="hysteria2_gecko_max_packet_size">Maximum packet size</string>
+    <string name="hysteria2_gecko_min_packet_size">Minimum packet size</string>
 </resources>

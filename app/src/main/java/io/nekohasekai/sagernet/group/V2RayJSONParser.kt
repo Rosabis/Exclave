@@ -53,7 +53,7 @@ import io.nekohasekai.sagernet.fmt.v2ray.supportedVmessMethod
 import io.nekohasekai.sagernet.fmt.v2ray.supportedXhttpMode
 import io.nekohasekai.sagernet.fmt.wireguard.WireGuardBean
 import io.nekohasekai.sagernet.ktx.*
-import libsagernetcore.Libsagernetcore
+import libexclavecore.Libexclavecore
 import java.util.Base64
 
 fun parseV2RayOutbound(outbound: JsonObject): List<AbstractBean> {
@@ -152,8 +152,8 @@ fun parseV2RayOutbound(outbound: JsonObject): List<AbstractBean> {
                                         v2rayBean.allowInsecure = true
                                     }
                                 }
-                                if (v2rayBean is VLESSBean) {
-                                    // Only parse ECH for shit VLESS free nodes
+                                if (v2rayBean is VLESSBean || v2rayBean is TrojanBean) {
+                                    // Only parse ECH for shit VLESS or Trojan free nodes
                                     tlsSettings.getString("echDohServer")?.also {
                                         v2rayBean.echEnabled = true
                                     }
@@ -186,6 +186,9 @@ fun parseV2RayOutbound(outbound: JsonObject): List<AbstractBean> {
                                 }
                                 realitySettings.getString("password")?.takeIf { it.isNotEmpty() }?.also {
                                     v2rayBean.realityPublicKey = it
+                                }
+                                if (v2rayBean.realityPublicKey.isNullOrEmpty()) {
+                                    return listOf()
                                 }
                                 realitySettings.getString("shortId")?.also {
                                     v2rayBean.realityShortId = it
@@ -274,6 +277,9 @@ fun parseV2RayOutbound(outbound: JsonObject): List<AbstractBean> {
                         }
                         "ws", "websocket" -> {
                             v2rayBean.type = "ws"
+                            // Fuck Xray ws ALPN
+                            // https://github.com/XTLS/Xray-core/blob/1bdb488c9ec09ea51e6899697d5b7437f3cf6eb2/transport/internet/tls/tls.go#L94-L131
+                            v2rayBean.alpn = null
                             streamSettings.getObject("wsSettings")?.also { wsSettings ->
                                 wsSettings.getObject("headers")?.also {
                                     v2rayBean.host = it.getString("host")
@@ -294,7 +300,7 @@ fun parseV2RayOutbound(outbound: JsonObject): List<AbstractBean> {
                                     v2rayBean.path = path
                                     try {
                                         // RPRX's smart-assed invention. This of course will break under some conditions.
-                                        val u = Libsagernetcore.parseURL(path)
+                                        val u = Libexclavecore.parseURL(path)
                                         u.queryParameter("ed")?.also { ed ->
                                             u.deleteQueryParameter("ed")
                                             v2rayBean.path = u.string
@@ -356,6 +362,9 @@ fun parseV2RayOutbound(outbound: JsonObject): List<AbstractBean> {
                         }
                         "httpupgrade" -> {
                             v2rayBean.type = "httpupgrade"
+                            // Fuck Xray httpupgrade ALPN
+                            // https://github.com/XTLS/Xray-core/blob/1bdb488c9ec09ea51e6899697d5b7437f3cf6eb2/transport/internet/tls/tls.go#L94-L131
+                            v2rayBean.alpn = null
                             streamSettings.getObject("httpupgradeSettings")?.also { httpupgradeSettings ->
                                 httpupgradeSettings.getString("host")?.also {
                                     // will not follow the breaking change in
@@ -366,7 +375,7 @@ fun parseV2RayOutbound(outbound: JsonObject): List<AbstractBean> {
                                     v2rayBean.path = it
                                     try {
                                         // RPRX's smart-assed invention. This of course will break under some conditions.
-                                        val u = Libsagernetcore.parseURL(it)
+                                        val u = Libexclavecore.parseURL(it)
                                         u.queryParameter("ed")?.also {
                                             u.deleteQueryParameter("ed")
                                             v2rayBean.path = u.string
@@ -570,7 +579,7 @@ fun parseV2RayOutbound(outbound: JsonObject): List<AbstractBean> {
                                 }
                                 hy2Settings.getObject("obfs")?.also { obfs ->
                                     obfs.getString("type")?.also { type ->
-                                        if (type == "salamander") {
+                                        if (type.isNotEmpty()) {
                                             return listOf()
                                         }
                                     }
@@ -1024,10 +1033,25 @@ fun parseV2RayOutbound(outbound: JsonObject): List<AbstractBean> {
                                 }
                                 hy2Settings.getObject("obfs")?.also { obfs ->
                                     obfs.getString("type")?.also { type ->
-                                        if (type == "salamander") {
-                                            obfs.getString("password")?.also {
-                                                hysteria2Bean.obfs = it
+                                        when (type) {
+                                            "" -> {}
+                                            "salamander" -> {
+                                                obfs.getString("password")?.also {
+                                                    hysteria2Bean.obfsPassword = it
+                                                }
                                             }
+                                            "gecko" -> {
+                                                obfs.getString("password")?.also {
+                                                    hysteria2Bean.obfsPassword = it
+                                                }
+                                                obfs.getInt("minPacketSize")?.takeIf { it > 0 }?.also {
+                                                    hysteria2Bean.geckoMinPacketSize = it
+                                                }
+                                                obfs.getInt("maxPacketSize")?.takeIf { it > 0 }?.also {
+                                                    hysteria2Bean.geckoMaxPacketSize = it
+                                                }
+                                            }
+                                            else -> return listOf()
                                         }
                                     }
                                 }
@@ -1757,11 +1781,45 @@ fun parseV2RayOutbound(outbound: JsonObject): List<AbstractBean> {
                     finalmask.getArray("udp")?.takeIf { it.isNotEmpty() }?.also { udpMasks ->
                         if (udpMasks.size != 1) return listOf()
                         val udpmask = udpMasks[0]
-                        if (udpmask.getString("type") != "salamander") return listOf()
-                        udpmask.getObject("settings")?.also { settings ->
-                            settings.getString("password")?.also {
-                                hysteria2Bean.obfs = it
+                        when (udpmask.getString("type")) {
+                            "" -> {}
+                            "salamander" -> {
+                                hysteria2Bean.obfsType = "salamander"
+                                udpmask.getObject("settings")?.also { settings ->
+                                    settings.getString("password")?.also {
+                                        hysteria2Bean.obfsPassword = it
+                                    }
+                                }
                             }
+                            "gecko" -> {
+                                hysteria2Bean.obfsType = "gecko"
+                                udpmask.getObject("settings")?.also { settings ->
+                                    settings.getString("password")?.also {
+                                        hysteria2Bean.obfsPassword = it
+                                    }
+                                    settings.getInt("packetSize")?.also {
+                                        hysteria2Bean.geckoMinPacketSize = it.takeIf { it > 0 }
+                                        hysteria2Bean.geckoMaxPacketSize = it.takeIf { it > 0 }
+                                    } ?: settings.getString("packetSize")?.also {
+                                        val packetSizeInt = it.toIntOrNull()
+                                        if (packetSizeInt != null && packetSizeInt > 0) {
+                                            hysteria2Bean.geckoMinPacketSize = packetSizeInt
+                                            hysteria2Bean.geckoMaxPacketSize = packetSizeInt
+                                        } else {
+                                            val packetSizeStringList = it.split("-")
+                                            if (packetSizeStringList.size == 2) {
+                                                val packetSizeInt0 = packetSizeStringList[0].toIntOrNull()
+                                                val packetSizeInt1 = packetSizeStringList[1].toIntOrNull()
+                                                if (packetSizeInt0 != null && packetSizeInt0 > 0 && packetSizeInt1 != null && packetSizeInt1 > 0) {
+                                                    hysteria2Bean.geckoMinPacketSize = minOf(packetSizeInt0, packetSizeInt1)
+                                                    hysteria2Bean.geckoMaxPacketSize = maxOf(packetSizeInt0, packetSizeInt1)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else -> return listOf()
                         }
                     }
                     finalmask.getObject("quicParams")?.also { quicParams ->

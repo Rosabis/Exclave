@@ -364,7 +364,6 @@ public class V2RayConfig {
         public String ip;
         public Integer timeout;
         public Integer userLevel;
-        public String packetEncoding;
         public Boolean deferLastReply;
 
         public static class AccountObject {
@@ -450,7 +449,6 @@ public class V2RayConfig {
         public String pluginOpts;
         public List<String> pluginArgs;
         public String pluginWorkingDir;
-        public String packetEncoding;
         public List<UserObject> clients;
         public List<UserObject> users;
 
@@ -471,7 +469,6 @@ public class V2RayConfig {
 
         public List<ClientObject> clients;
         public List<FallbackObject> fallbacks;
-        public String packetEncoding;
 
         public static class ClientObject {
 
@@ -503,7 +500,6 @@ public class V2RayConfig {
         public Integer timeout;
         public Integer userLevel;
         public Boolean allowTransparent;
-        public String packetEncoding;
         public Boolean deferLastReply;
 
         public static class AccountObject {
@@ -584,7 +580,6 @@ public class V2RayConfig {
     }
 
     public static class Hysteria2InboundConfigurationObject implements InboundConfigurationObject {
-        public String packetEncoding;
     }
 
     public static class AnyTLSInboundConfigurationObject implements InboundConfigurationObject {
@@ -689,11 +684,9 @@ public class V2RayConfig {
                 case "wireguard":
                     return WireGuardOutboundConfigurationObject.class;
                 case "ssh":
-                    return SSHOutbountConfigurationObject.class;
+                    return SSHOutboundConfigurationObject.class;
                 case "shadowsocks-2022":
                     return Shadowsocks2022OutboundConfigurationObject.class;
-                case "shadowsocks2022":
-                    return Shadowsocks_2022OutboundConfigurationObject.class;
                 case "hysteria2":
                     return Hysteria2OutboundConfigurationObject.class;
                 case "tuic":
@@ -866,21 +859,6 @@ public class V2RayConfig {
 
     }
 
-    public static class Shadowsocks_2022OutboundConfigurationObject implements OutboundConfigurationObject {
-
-        public String address;
-        public Integer port;
-        public String method;
-        public String psk;
-        public List<String> ipsk;
-        public String plugin;
-        public String pluginOpts;
-        public List<String> pluginArgs;
-        public String pluginWorkingDir;
-        public Boolean uot;
-
-    }
-
     public static class VLESSOutboundConfigurationObject implements OutboundConfigurationObject {
 
         public List<ServerObject> vnext;
@@ -949,7 +927,7 @@ public class V2RayConfig {
 
     }
 
-    public static class SSHOutbountConfigurationObject implements OutboundConfigurationObject {
+    public static class SSHOutboundConfigurationObject implements OutboundConfigurationObject {
 
         public String address;
         public Integer port;
@@ -961,6 +939,7 @@ public class V2RayConfig {
         public Integer userLevel;
         public String clientVersion;
         public List<String> hostKeyAlgorithms;
+        public Integer keepaliveInterval;
 
     }
 
@@ -1337,6 +1316,7 @@ public class V2RayConfig {
         public Long hopInterval;
         public Long hopIntervalMin;
         public Long hopIntervalMax;
+        public Boolean omitMaxDatagramFrameSize;
 
         public static class CongestionObject {
             public String type;
@@ -1348,6 +1328,8 @@ public class V2RayConfig {
         public static class OBFSObject {
             public String type;
             public String password;
+            public Integer minPacketSize;
+            public Integer maxPacketSize;
         }
 
     }
