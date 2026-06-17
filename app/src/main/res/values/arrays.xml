@@ -360,6 +360,11 @@
         <item>quic</item>
     </string-array>
 
+    <string-array name="trusttunnel_protocol_entry">
+        <item>HTTP/2</item>
+        <item>HTTP/3</item>
+    </string-array>
+
     <string-array name="config_type_entry">
         <item>@string/custom_config</item>
         <item>@string/custom_outbound</item>
@@ -861,8 +866,6 @@
         <item>websocket-http</item>
         <item>websocket-tls</item>
         <item>quic-tls</item>
-        <item>grpc</item>
-        <item>grpc-tls</item>
     </string-array>
 
     <string-array name="v2ray_plugin_log_level">
