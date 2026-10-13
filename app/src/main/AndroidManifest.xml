@@ -26,6 +26,14 @@
     <uses-permission
         android:name="android.permission.NEARBY_WIFI_DEVICES"
         android:minSdkVersion="36" />
+    <uses-permission
+        android:name="android.permission.ACCESS_LOCAL_NETWORK"
+        android:minSdkVersion="37" />
+    <!-- INTERACT_ACROSS_USERS needs to be granted via ADB -->
+    <uses-permission
+        android:name="android.permission.INTERACT_ACROSS_USERS"
+        android:minSdkVersion="37"
+        tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -120,7 +128,6 @@
                 <!--data android:scheme="http" /-->
                 <!--data android:scheme="https" /-->
                 <data android:scheme="ss" />
-                <!--data android:scheme="ssh" /-->
                 <data android:scheme="ssr" />
                 <data android:scheme="socks" />
                 <data android:scheme="socks4" />
@@ -181,8 +188,6 @@
         <activity
             android:name="io.nekohasekai.sagernet.ui.profile.Tuic5SettingsActivity" />
         <activity
-            android:name="io.nekohasekai.sagernet.ui.profile.ShadowTLSSettingsActivity" />
-        <activity
             android:name="io.nekohasekai.sagernet.ui.profile.JuicitySettingsActivity" />
         <activity
             android:name="io.nekohasekai.sagernet.ui.profile.Http3SettingsActivity" />
@@ -192,6 +197,8 @@
             android:name="io.nekohasekai.sagernet.ui.profile.ShadowQUICSettingsActivity" />
         <activity
             android:name="io.nekohasekai.sagernet.ui.profile.TrustTunnelSettingsActivity" />
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.profile.SnellSettingsActivity" />
         <activity
             android:name="io.nekohasekai.sagernet.ui.profile.ConfigSettingsActivity" />
         <activity
@@ -257,7 +264,9 @@
 
         <activity
             android:name="io.nekohasekai.sagernet.ui.SwitchActivity"
+            android:excludeFromRecents="true"
             android:launchMode="singleInstance"
+            android:taskAffinity="io.nekohasekai.sagernet.ui.SwitchActivity"
             android:theme="@style/Theme.SagerNet.Dialog" />
 
         <service

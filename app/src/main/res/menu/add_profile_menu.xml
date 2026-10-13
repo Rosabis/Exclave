@@ -81,14 +81,14 @@
                                 android:title="TrustTunnel"
                                 tools:ignore="HardcodedText" />
                             <item
+                                android:id="@+id/action_new_snell"
+                                android:title="@string/action_snell" />
+                            <item
                                 android:id="@+id/action_new_ssh"
                                 android:title="@string/action_ssh" />
                             <item
                                 android:id="@+id/action_new_wg"
                                 android:title="@string/action_wireguard" />
-                            <item
-                                android:id="@+id/action_new_shadowtls"
-                                android:title="@string/action_shadowtls" />
                             <item
                                 android:id="@+id/action_new_shadowquic"
                                 android:title="@string/action_shadowquic" />

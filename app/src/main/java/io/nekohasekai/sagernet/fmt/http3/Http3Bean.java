@@ -28,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
 
 import io.nekohasekai.sagernet.fmt.AbstractBean;
 import io.nekohasekai.sagernet.fmt.KryoConverters;
+import io.nekohasekai.sagernet.ktx.NetsKt;
 import libexclavecore.Libexclavecore;
 
 public class Http3Bean extends AbstractBean {
@@ -41,9 +42,13 @@ public class Http3Bean extends AbstractBean {
     public String pinnedPeerCertificateSha256;
     public Boolean allowInsecure;
     public Boolean echEnabled;
-    public String echConfig;
+    public String echConfigList;
+    public String echQueryName;
     public String mtlsCertificate;
     public String mtlsCertificatePrivateKey;
+    public String serverNameToVerify;
+    public Boolean connectUDP;
+    public String uriTemplate;
 
     @Override
     public void initializeDefaultValues() {
@@ -57,14 +62,18 @@ public class Http3Bean extends AbstractBean {
         if (pinnedPeerCertificateSha256 == null) pinnedPeerCertificateSha256 = "";
         if (allowInsecure == null) allowInsecure = false;
         if (echEnabled == null) echEnabled = false;
-        if (echConfig == null) echConfig = "";
+        if (echConfigList == null) echConfigList = "";
+        if (echQueryName == null) echQueryName = "";
         if (mtlsCertificate == null) mtlsCertificate = "";
         if (mtlsCertificatePrivateKey == null) mtlsCertificatePrivateKey = "";
+        if (serverNameToVerify == null) serverNameToVerify = "";
+        if (connectUDP == null) connectUDP = false;
+        if (uriTemplate == null) uriTemplate = "";
     }
 
     @Override
     public void serialize(ByteBufferOutput output) {
-        output.writeInt(4);
+        output.writeInt(7);
         super.serialize(output);
         output.writeString(username);
         output.writeString(password);
@@ -74,12 +83,16 @@ public class Http3Bean extends AbstractBean {
         output.writeString(pinnedPeerCertificatePublicKeySha256);
         output.writeString(pinnedPeerCertificateSha256);
         output.writeBoolean(allowInsecure);
-        output.writeString(echConfig);
+        output.writeString(echConfigList);
         output.writeString(mtlsCertificate);
         output.writeString(mtlsCertificatePrivateKey);
         output.writeBoolean(false); // trustTunnelUot, removed
 
         output.writeBoolean(echEnabled);
+        output.writeString(serverNameToVerify);
+        output.writeString(echQueryName);
+        output.writeBoolean(connectUDP);
+        output.writeString(uriTemplate);
     }
 
     @Override
@@ -96,8 +109,8 @@ public class Http3Bean extends AbstractBean {
             pinnedPeerCertificateSha256 = input.readString();
         }
         allowInsecure = input.readBoolean();
-        echConfig = input.readString();
-        if (version <= 3 && !echConfig.isEmpty()) {
+        echConfigList = input.readString();
+        if (version <= 3 && !echConfigList.isEmpty()) {
             echEnabled = true;
         }
         if (version == 0) {
@@ -112,6 +125,16 @@ public class Http3Bean extends AbstractBean {
         }
         if (version >= 4) {
             echEnabled = input.readBoolean();
+        }
+        if (version >= 5) {
+            serverNameToVerify = input.readString();
+        }
+        if (version >= 6) {
+            echQueryName = input.readString();
+        }
+        if (version >= 7) {
+            connectUDP = input.readBoolean();
+            uriTemplate = input.readString();
         }
     }
 
@@ -137,7 +160,10 @@ public class Http3Bean extends AbstractBean {
             bean.pinnedPeerCertificateSha256 = pinnedPeerCertificateSha256;
         }
         bean.echEnabled = echEnabled;
-        bean.echConfig = echConfig;
+        bean.echConfigList = echConfigList;
+        bean.echQueryName = echQueryName;
+        bean.connectUDP = connectUDP;
+        bean.uriTemplate = uriTemplate;
     }
 
     @NotNull
@@ -178,6 +204,9 @@ public class Http3Bean extends AbstractBean {
             return false;
         }
         if (!pinnedPeerCertificateSha256.isEmpty()) {
+            return false;
+        }
+        if (!NetsKt.listByLineOrComma(serverNameToVerify).isEmpty()) {
             return false;
         }
         return true;

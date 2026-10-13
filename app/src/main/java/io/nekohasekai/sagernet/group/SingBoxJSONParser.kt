@@ -23,9 +23,11 @@ import com.github.shadowsocks.plugin.PluginOptions
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.fmt.AbstractBean
 import io.nekohasekai.sagernet.fmt.anytls.AnyTLSBean
 import io.nekohasekai.sagernet.fmt.http.HttpBean
+import io.nekohasekai.sagernet.fmt.http3.Http3Bean
 import io.nekohasekai.sagernet.fmt.hysteria2.Hysteria2Bean
 import io.nekohasekai.sagernet.fmt.naive.NaiveBean
 import io.nekohasekai.sagernet.fmt.shadowsocks.ShadowsocksBean
@@ -34,6 +36,7 @@ import io.nekohasekai.sagernet.fmt.shadowsocksr.ShadowsocksRBean
 import io.nekohasekai.sagernet.fmt.shadowsocksr.supportedShadowsocksRMethod
 import io.nekohasekai.sagernet.fmt.shadowsocksr.supportedShadowsocksRObfs
 import io.nekohasekai.sagernet.fmt.shadowsocksr.supportedShadowsocksRProtocol
+import io.nekohasekai.sagernet.fmt.snell.SnellBean
 import io.nekohasekai.sagernet.fmt.socks.SOCKSBean
 import io.nekohasekai.sagernet.fmt.ssh.SSHBean
 import io.nekohasekai.sagernet.fmt.trojan.TrojanBean
@@ -45,9 +48,11 @@ import io.nekohasekai.sagernet.fmt.v2ray.VMessBean
 import io.nekohasekai.sagernet.fmt.v2ray.supportedVmessMethod
 import io.nekohasekai.sagernet.fmt.wireguard.WireGuardBean
 import io.nekohasekai.sagernet.ktx.*
+import java.io.StringReader
 import kotlin.io.encoding.Base64
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
+import org.bouncycastle.openssl.PEMParser
 
 fun parseSingBoxOutbound(outbound: JsonObject): List<AbstractBean> {
     when (val type = outbound.getString("type", ignoreCase = false)) {
@@ -203,11 +208,18 @@ fun parseSingBoxOutbound(outbound: JsonObject): List<AbstractBean> {
                                         v2rayBean.mtlsCertificatePrivateKey = key
                                     }
                                 }
-                                tls.getByteArrayArray("certificate_public_key_sha256")?.also {
+                                tls.getByteArrayArray("certificate_public_key_sha256")?.takeIf { it.isNotEmpty() }?.also {
                                     v2rayBean.pinnedPeerCertificatePublicKeySha256 = it.joinToString("\n") { Base64.encode(it) }
                                     v2rayBean.allowInsecure = true
-                                } ?: tls.getByteArray("certificate_public_key_sha256")?.also {
+                                } ?: tls.getByteArray("certificate_public_key_sha256")?.takeIf { it.isNotEmpty() }?.also {
                                     v2rayBean.pinnedPeerCertificatePublicKeySha256 = Base64.encode(it)
+                                    v2rayBean.allowInsecure = true
+                                }
+                                tls.getByteArrayArray("certificate_sha256")?.takeIf { it.isNotEmpty() }?.also {
+                                    v2rayBean.pinnedPeerCertificateSha256 = it.joinToString("\n") { it.toHexString() }
+                                    v2rayBean.allowInsecure = true
+                                } ?: tls.getByteArray("certificate_sha256")?.takeIf { it.isNotEmpty() }?.also {
+                                    v2rayBean.pinnedPeerCertificateSha256 = it.toHexString()
                                     v2rayBean.allowInsecure = true
                                 }
                                 tls.getObject("reality")?.also { reality ->
@@ -223,20 +235,16 @@ fun parseSingBoxOutbound(outbound: JsonObject): List<AbstractBean> {
                                         }
                                     }
                                 }
-                                if (v2rayBean is VLESSBean || v2rayBean is TrojanBean) {
-                                    // Only parse ECH for shit VLESS or Trojan free nodes
+                                if (v2rayBean is VLESSBean || v2rayBean is TrojanBean || v2rayBean is VMessBean) {
                                     tls.getObject("ech")?.also { ech ->
-                                    ech.getBoolean("enabled")?.also { enabled ->
-                                        if (enabled) {
-                                            v2rayBean.echEnabled = true
-                                            ech.getStringArray("config")?.also {
-                                                v2rayBean.echConfig = parseECHConfigPem(it.joinToString("\n"))
-                                            } ?: ech.getString("config")?.also {
-                                                v2rayBean.echConfig = parseECHConfigPem(it)
-                                            }
+                                        v2rayBean.echEnabled = ech.getBoolean("enabled")
+                                        ech.getStringArray("config")?.also {
+                                            v2rayBean.echConfigList = parseECHConfigPem(it.joinToString("\n"))
+                                        } ?: ech.getString("config")?.also {
+                                            v2rayBean.echConfigList = parseECHConfigPem(it)
                                         }
+                                        v2rayBean.echQueryName = ech.getString("query_server_name")
                                     }
-                                }
                                 }
                             }
                         }
@@ -277,6 +285,27 @@ fun parseSingBoxOutbound(outbound: JsonObject): List<AbstractBean> {
                     outbound.getString("password")?.also {
                         v2rayBean.password = it
                     }
+                    if (v2rayBean.security == "tls") {
+                        outbound.getInt("version")?.takeIf { it == 3 }?.also {
+                            return listOf(Http3Bean().apply {
+                                serverAddress = v2rayBean.serverAddress
+                                serverPort = v2rayBean.serverPort
+                                name = v2rayBean.name
+                                username = v2rayBean.username
+                                password = v2rayBean.password
+                                sni = v2rayBean.sni
+                                certificates = v2rayBean.certificates
+                                pinnedPeerCertificatePublicKeySha256 = v2rayBean.pinnedPeerCertificatePublicKeySha256
+                                pinnedPeerCertificateSha256 = v2rayBean.pinnedPeerCertificateSha256
+                                allowInsecure = v2rayBean.allowInsecure
+                                /*echEnabled = v2rayBean.echEnabled
+                                echConfigList = v2rayBean.echConfigList
+                                echQueryName = v2rayBean.echQueryName*/
+                                mtlsCertificate = v2rayBean.mtlsCertificate
+                                mtlsCertificatePrivateKey = v2rayBean.mtlsCertificatePrivateKey
+                            })
+                        }
+                    }
                 }
                 "shadowsocks" -> {
                     v2rayBean as ShadowsocksBean
@@ -289,6 +318,10 @@ fun parseSingBoxOutbound(outbound: JsonObject): List<AbstractBean> {
                     }
                     outbound.getString("plugin")?.takeIf { it.isNotEmpty() }?.also { pluginId ->
                         if (pluginId != "obfs-local" && pluginId != "v2ray-plugin") return listOf()
+                        // In sing-box, v2ray-plugin quic mode sends ALPN "h3" but nobody complains about it.
+                        // Let's assume nobody uses v2ray-plugin quic mode in sing-box. Keep it broken.
+                        // https://github.com/SagerNet/sing-box/pull/1934
+                        // https://github.com/ExclaveNetwork/Exclave/issues/488
                         v2rayBean.plugin = PluginOptions(pluginId, outbound.getString("plugin_opts")).toString(trimId = false)
                     }
                 }
@@ -300,8 +333,9 @@ fun parseSingBoxOutbound(outbound: JsonObject): List<AbstractBean> {
                 }
                 "vmess" -> {
                     v2rayBean as VMessBean
-                    outbound.getString("uuid")?.also {
-                        v2rayBean.uuid = uuidOrGenerate(it)
+                    outbound.getString("uuid").orEmpty().also {
+                        // see https://github.com/SagerNet/sing-vmess/blob/31ec11e8790c48a4bf11711806a61e929ee6b89d/client.go#L37-L40
+                        v2rayBean.uuid = parseUUID(it)?.toHexDashString() ?: uuid5(it)
                     }
                     outbound.getString("security")?.also {
                         if (it !in supportedVmessMethod) return listOf()
@@ -321,8 +355,9 @@ fun parseSingBoxOutbound(outbound: JsonObject): List<AbstractBean> {
                 }
                 "vless" -> {
                     v2rayBean as VLESSBean
-                    outbound.getString("uuid")?.also {
-                        v2rayBean.uuid = uuidOrGenerate(it)
+                    outbound.getString("uuid").orEmpty().also {
+                        // see https://github.com/SagerNet/sing-vmess/blob/31ec11e8790c48a4bf11711806a61e929ee6b89d/vless/client.go#L28-L31
+                        v2rayBean.uuid = parseUUID(it)?.toHexDashString() ?: uuid5(it)
                     }
                     v2rayBean.packetEncoding = when (outbound.getString("packet_encoding")) {
                         "packetaddr" -> "packet"
@@ -340,6 +375,17 @@ fun parseSingBoxOutbound(outbound: JsonObject): List<AbstractBean> {
                         }
                     }
                 }
+            }
+            if (v2rayBean.security == "reality") {
+                when (v2rayBean.type) {
+                    null, "tcp", "http", "grpc", "splithttp" -> {}
+                    else -> return listOf()
+                }
+            }
+            if (v2rayBean is VLESSBean && v2rayBean.flow == "xtls-rprx-vision-udp443"
+                && v2rayBean.security != null && v2rayBean.security != "none"
+                && v2rayBean.type != null && v2rayBean.type != "tcp") {
+                return listOf()
             }
             return listOf(v2rayBean)
         }
@@ -439,25 +485,29 @@ fun parseSingBoxOutbound(outbound: JsonObject): List<AbstractBean> {
                             mtlsCertificatePrivateKey = key
                         }
                     }
-                    tls.getByteArrayArray("certificate_public_key_sha256")?.also {
+                    tls.getByteArrayArray("certificate_public_key_sha256")?.takeIf { it.isNotEmpty() }?.also {
                         pinnedPeerCertificatePublicKeySha256 = it.joinToString("\n") { Base64.encode(it) }
                         allowInsecure = true
-                    } ?: tls.getByteArray("certificate_public_key_sha256")?.also {
+                    } ?: tls.getByteArray("certificate_public_key_sha256")?.takeIf { it.isNotEmpty() }?.also {
                         pinnedPeerCertificatePublicKeySha256 = Base64.encode(it)
                         allowInsecure = true
                     }
-                    /*tls.getObject("ech")?.also { ech ->
-                        ech.getBoolean("enabled")?.also { enabled ->
-                            if (enabled) {
-                                echEnabled = true
-                                ech.getStringArray("config")?.also {
-                                    echConfig = parseECHConfigPem(it.joinToString("\n"))
-                                } ?: ech.getString("config")?.also {
-                                    echConfig = parseECHConfigPem(it)
-                                }
-                            }
+                    tls.getByteArrayArray("certificate_sha256")?.takeIf { it.isNotEmpty() }?.also {
+                        pinnedPeerCertificateSha256 = it.joinToString("\n") { it.toHexString() }
+                        allowInsecure = true
+                    } ?: tls.getByteArray("certificate_sha256")?.takeIf { it.isNotEmpty() }?.also {
+                        pinnedPeerCertificateSha256 = it.toHexString()
+                        allowInsecure = true
+                    }
+                    tls.getObject("ech")?.also { ech ->
+                        echEnabled = ech.getBoolean("enabled")
+                        ech.getStringArray("config")?.also {
+                            echConfigList = parseECHConfigPem(it.joinToString("\n"))
+                        } ?: ech.getString("config")?.also {
+                            echConfigList = parseECHConfigPem(it)
                         }
-                    }*/
+                        echQueryName = ech.getString("query_server_name")
+                    }
                 } ?: return listOf()
                 outbound.getObject("obfs")?.also { obfuscation ->
                     obfuscation.getString("type")?.takeIf { it.isNotEmpty() }?.also { type ->
@@ -498,8 +548,8 @@ fun parseSingBoxOutbound(outbound: JsonObject): List<AbstractBean> {
                 outbound.getInt("server_port")?.also {
                     serverPort = it
                 } ?: return listOf()
-                outbound.getString("uuid")?.also {
-                    uuid = it
+                outbound.getString("uuid").orEmpty().also {
+                    uuid = parseUUID(it)?.toHexDashString() ?: return listOf()
                 }
                 outbound.getString("password")?.also {
                     password = it
@@ -575,24 +625,28 @@ fun parseSingBoxOutbound(outbound: JsonObject): List<AbstractBean> {
                             mtlsCertificatePrivateKey = key
                         }
                     }
-                    tls.getByteArrayArray("certificate_public_key_sha256")?.also {
+                    tls.getByteArrayArray("certificate_public_key_sha256")?.takeIf { it.isNotEmpty() }?.also {
                         pinnedPeerCertificatePublicKeySha256 = it.joinToString("\n") { Base64.encode(it) }
                         allowInsecure = true
-                    } ?: tls.getByteArray("certificate_public_key_sha256")?.also {
+                    } ?: tls.getByteArray("certificate_public_key_sha256")?.takeIf { it.isNotEmpty() }?.also {
                         pinnedPeerCertificatePublicKeySha256 = Base64.encode(it)
                         allowInsecure = true
                     }
+                    tls.getByteArrayArray("certificate_sha256")?.takeIf { it.isNotEmpty() }?.also {
+                        pinnedPeerCertificateSha256 = it.joinToString("\n") { it.toHexString() }
+                        allowInsecure = true
+                    } ?: tls.getByteArray("certificate_sha256")?.takeIf { it.isNotEmpty() }?.also {
+                        pinnedPeerCertificateSha256 = it.toHexString()
+                        allowInsecure = true
+                    }
                     /*tls.getObject("ech")?.also { ech ->
-                        ech.getBoolean("enabled")?.also { enabled ->
-                            if (enabled) {
-                                echEnabled = true
-                                ech.getStringArray("config")?.also {
-                                    echConfig = parseECHConfigPem(it.joinToString("\n"))
-                                } ?: ech.getString("config")?.also {
-                                    echConfig = parseECHConfigPem(it)
-                                }
-                            }
+                        echEnabled = ech.getBoolean("enabled")
+                        ech.getStringArray("config")?.also {
+                            echConfig = parseECHConfigPem(it.joinToString("\n"))
+                        } ?: ech.getString("config")?.also {
+                            echConfig = parseECHConfigPem(it)
                         }
+                        echQueryName = ech.getString("query_server_name")
                     }*/
                 } ?: return listOf()
             }
@@ -752,11 +806,18 @@ fun parseSingBoxOutbound(outbound: JsonObject): List<AbstractBean> {
                                     mtlsCertificatePrivateKey = key
                                 }
                             }
-                            tls.getByteArrayArray("certificate_public_key_sha256")?.also {
+                            tls.getByteArrayArray("certificate_public_key_sha256")?.takeIf { it.isNotEmpty() }?.also {
                                 pinnedPeerCertificatePublicKeySha256 = it.joinToString("\n") { Base64.encode(it) }
                                 allowInsecure = true
-                            } ?: tls.getByteArray("certificate_public_key_sha256")?.also {
+                            } ?: tls.getByteArray("certificate_public_key_sha256")?.takeIf { it.isNotEmpty() }?.also {
                                 pinnedPeerCertificatePublicKeySha256 = Base64.encode(it)
+                                allowInsecure = true
+                            }
+                            tls.getByteArrayArray("certificate_sha256")?.takeIf { it.isNotEmpty() }?.also {
+                                pinnedPeerCertificateSha256 = it.joinToString("\n") { it.toHexString() }
+                                allowInsecure = true
+                            } ?: tls.getByteArray("certificate_sha256")?.takeIf { it.isNotEmpty() }?.also {
+                                pinnedPeerCertificateSha256 = it.toHexString()
                                 allowInsecure = true
                             }
                             tls.getObject("reality")?.also { reality ->
@@ -773,16 +834,13 @@ fun parseSingBoxOutbound(outbound: JsonObject): List<AbstractBean> {
                                 }
                             }
                             /*tls.getObject("ech")?.also { ech ->
-                                ech.getBoolean("enabled")?.also { enabled ->
-                                    if (enabled) {
-                                        echEnabled = true
-                                        ech.getStringArray("config")?.also {
-                                            echConfig = parseECHConfigPem(it.joinToString("\n"))
-                                        } ?: ech.getString("config")?.also {
-                                            echConfig = parseECHConfigPem(it)
-                                        }
-                                    }
+                                echEnabled = ech.getBoolean("enabled")
+                                ech.getStringArray("config")?.also {
+                                    echConfig = parseECHConfigPem(it.joinToString("\n"))
+                                } ?: ech.getString("config")?.also {
+                                    echConfig = parseECHConfigPem(it)
                                 }
+                                echQueryName = ech.getString("query_server_name")
                             }*/
                         } else {
                             security = "none"
@@ -834,6 +892,53 @@ fun parseSingBoxOutbound(outbound: JsonObject): List<AbstractBean> {
                 }
             }
             return listOf(naiveBean)
+        }
+        "snell" -> {
+            val snellBean = SnellBean().apply {
+                outbound.getString("tag", ignoreCase = false)?.also {
+                    name = it
+                }
+                outbound.getString("server")?.also {
+                    serverAddress = it
+                } ?: return listOf()
+                outbound.getInt("server_port")?.also {
+                    serverPort = it
+                } ?: return listOf()
+                version = outbound.getInt("version")
+                if (version != 4 && version != 6) return listOf()
+                outbound.getString("psk")?.also {
+                    psk = it
+                }
+                if (DataStore.experimentalFlagsProperties.getBooleanProperty("singSnellUserKey")) {
+                    outbound.getString("userkey")?.also {
+                        userKey = it
+                    }
+                }
+                reuse = outbound.getBoolean("reuse") ?: false
+                when (version) {
+                    4 -> when (outbound.getString("obfs_mode")?.lowercase()) {
+                        null, "", "none" -> {
+                            obfsMode = SnellBean.OBFS_NONE
+                        }
+                        "http" -> {
+                            obfsMode = SnellBean.OBFS_HTTP
+                            obfsHost = outbound.getString("obfs_host")
+                        }
+                        "tls" -> {
+                            obfsMode = SnellBean.OBFS_TLS
+                            obfsHost = outbound.getString("obfs_host")
+                        }
+                        else -> return listOf()
+                    }
+                    6 -> mode = when (outbound.getString("mode")) {
+                        null, "", "default" -> SnellBean.MODE_DEFAULT
+                        "unshaped" -> SnellBean.MODE_UNSHAPED
+                        "unsafe-raw" -> SnellBean.MODE_UNSAFE_RAW
+                        else -> return listOf()
+                    }
+                }
+            }
+            return listOf(snellBean)
         }
         "wireguard" -> {
             if (outbound.contains("address")) {
@@ -1186,22 +1291,14 @@ private fun JsonObject.getByteArrayArray(key: String): Array<ByteArray>? {
     return ret.toTypedArray()
 }
 
-// this is not strict, but enough
 private fun parseECHConfigPem(pem: String): String? {
-    if (pem.split("-----BEGIN ECH CONFIGS-----").size - 1 != 1) {
-        return null
-    }
-    if (pem.split("-----END ECH CONFIGS-----").size - 1 != 1) {
-        return null
-    }
-    return try {
-         Base64.encode(Base64.decode(pem
-            .substringAfter("-----BEGIN ECH CONFIGS-----")
-            .substringBefore("-----END ECH CONFIGS-----")
-            .replace("\r", "")
-            .replace("\n", "")
-        ))
+    try {
+        val obj = PEMParser(StringReader(pem)).readPemObject()
+        if (obj.type != "ECH CONFIGS") {
+            return null
+        }
+        return Base64.encode(obj.content)
     } catch (_: Exception) {
-        null
+        return null
     }
 }

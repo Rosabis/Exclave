@@ -333,7 +333,6 @@ public class V2RayConfig {
         public String address;
         public Integer port;
         public String network;
-        public Integer timeout;
         public Boolean followRedirect;
         public Integer userLevel;
 
@@ -341,7 +340,6 @@ public class V2RayConfig {
 
     public static class HTTPInboundConfigurationObject implements InboundConfigurationObject {
 
-        public Integer timeout;
         public List<AccountObject> accounts;
         public Boolean allowTransparent;
         public Integer userLevel;
@@ -362,7 +360,6 @@ public class V2RayConfig {
         public List<AccountObject> accounts;
         public Boolean udp;
         public String ip;
-        public Integer timeout;
         public Integer userLevel;
         public Boolean deferLastReply;
 
@@ -441,7 +438,6 @@ public class V2RayConfig {
         public String email;
         public String method;
         public String password;
-        public Boolean udp;
         public Integer level;
         public String network;
         public Boolean ivCheck;
@@ -497,7 +493,6 @@ public class V2RayConfig {
         public List<AccountObject> accounts;
         public Boolean udp;
         public String ip;
-        public Integer timeout;
         public Integer userLevel;
         public Boolean allowTransparent;
         public Boolean deferLastReply;
@@ -693,8 +688,6 @@ public class V2RayConfig {
                     return TUICOutboundConfigurationObject.class;
                 case "http3":
                     return HTTP3OutboundConfigurationObject.class;
-                case "shadowtls":
-                    return ShadowTLSOutboundConfigurationObject.class;
                 case "anytls":
                     return AnyTLSOutboundConfigurationObject.class;
                 case "juicity":
@@ -703,6 +696,10 @@ public class V2RayConfig {
                     return MieruOutboundConfigurationObject.class;
                 case "trusttunnel":
                     return TrustTunnelOutboundConfigurationObject.class;
+                case "snell":
+                    return SnellOutboundConfigurationObject.class;
+                case "shadowquic":
+                    return ShadowQUICOutboundConfigurationObject.class;
             }
             return null;
         }
@@ -737,7 +734,6 @@ public class V2RayConfig {
     public static class FreedomOutboundConfigurationObject implements OutboundConfigurationObject {
 
         public String domainStrategy;
-        public String timeout;
         public String redirect;
         public Integer userLevel;
         // SagerNet private
@@ -749,6 +745,8 @@ public class V2RayConfig {
 
         public List<ServerObject> servers;
         public Boolean h1SkipWaitForReply;
+        public Boolean connectUDP;
+        public String uriTemplate;
 
         public static class ServerObject {
 
@@ -768,6 +766,8 @@ public class V2RayConfig {
         public String username;
         public String password;
         public Map<String, String> headers;
+        public Boolean connectUDP;
+        public String uriTemplate;
 
     }
 
@@ -968,22 +968,9 @@ public class V2RayConfig {
         public String udpRelayMode;
         public Integer heartbeat;
         public Boolean zeroRTTHandshake;
-        public Boolean disableSNI;
         public Boolean udpOverStream;
 
     }
-
-
-    public static class ShadowTLSOutboundConfigurationObject implements OutboundConfigurationObject {
-
-        public String address;
-        public Integer port;
-        public String password;
-        public Integer version;
-        public Integer idleSessionTimeout;
-
-    }
-
 
     public static class AnyTLSOutboundConfigurationObject implements OutboundConfigurationObject {
 
@@ -993,6 +980,7 @@ public class V2RayConfig {
         public Integer idleSessionCheckInterval;
         public Integer idleSessionTimeout;
         public Integer minIdleSession;
+        public Boolean disableReuse;
 
     }
 
@@ -1002,6 +990,23 @@ public class V2RayConfig {
         public Integer port;
         public String uuid;
         public String password;
+
+    }
+
+    
+    public static class SnellOutboundConfigurationObject implements OutboundConfigurationObject {
+
+        public String address;
+        public Integer port;
+        public String psk;
+        public String userKey;
+        public String obfsMode;
+        public String obfsHost;
+        public String obfsURI;
+        public Integer version;
+        public Boolean reuse;
+        public String mode;
+        public String domainStrategy;
 
     }
 
@@ -1027,23 +1032,21 @@ public class V2RayConfig {
         public String username;
         public String password;
         public Boolean http3;
-        public String serverNameToVerify;
         public String domainStrategy;
 
     }
 
-    public TransportObject transport;
+    public static class ShadowQUICOutboundConfigurationObject implements OutboundConfigurationObject {
 
-    public static class TransportObject {
-
-        public TcpObject tcpSettings;
-        public KcpObject kcpSettings;
-        public WebSocketObject wsSettings;
-        public HttpObject httpSettings;
-        public QuicObject quicSettings;
-        public DomainSocketObject dsSettings;
-        public GrpcObject grpcSettings;
-        public GrpcObject gunSettings;
+        public String address;
+        public Integer port;
+        public String username;
+        public String password;
+        public String congestionControl;
+        public Boolean udpOverStream;
+        public Boolean zeroRTTHandshake;
+        public String serverName;
+        public List<String> alpn;
 
     }
 
@@ -1068,6 +1071,7 @@ public class V2RayConfig {
         public SplitHTTPObject splithttpSettings;
         public SplitHTTPObject xhttpSettings;
         public MekyaObject mekyaSettings;
+        public TLSMirrorObject tlsmirrorSettings;
         public SockoptObject sockopt;
 
         public static class SockoptObject {
@@ -1111,6 +1115,7 @@ public class V2RayConfig {
         public String maxVersion;
         public Boolean allowInsecureIfPinnedPeerCertificate;
         public ECHObject ech;
+        public List<String> serverNameToVerify;
 
         public static class CertificateObject {
 
@@ -1152,6 +1157,8 @@ public class V2RayConfig {
         public String password; // alias of privateKey
         public String privateKey;
         public List<String> shortIds;
+        public Integer maxTimeDiff;
+        public String mldsa65Seed;
         public String serverName;
         public String publicKey;
         public String shortId;
@@ -1250,6 +1257,7 @@ public class V2RayConfig {
         public String security;
         public String key;
         public HeaderObject header;
+        public Integer connectionIDLength;
 
         public static class HeaderObject {
 
@@ -1317,13 +1325,16 @@ public class V2RayConfig {
         public Long hopInterval;
         public Long hopIntervalMin;
         public Long hopIntervalMax;
+        public Boolean disableStatelessReset;
         public Boolean omitMaxDatagramFrameSize;
+        public Boolean chromeParrot;
 
         public static class CongestionObject {
             public String type;
             public Long up_mbps;
             public Long down_mbps;
             public String bbrProfile;
+            public Boolean disableLossCompensation;
         }
 
         public static class OBFSObject {
@@ -1351,14 +1362,17 @@ public class V2RayConfig {
         public String xPaddingPlacement;
         public String xPaddingMethod;
         public String uplinkHTTPMethod;
-        public String sessionPlacement;
-        public String sessionKey;
+        public String sessionIDPlacement;
+        public String sessionIDKey;
+        public String sessionIDTable;
+        public String sessionIDLength;
         public String seqPlacement;
         public String seqKey;
         public String uplinkDataPlacement;
         public String uplinkDataKey;
         public String uplinkChunkSize;
         public Boolean noGRPCHeader;
+        public Boolean parseXForwardedFor;
         public XmuxObject xmux;
         public DownloadSettingsObject downloadSettings;
         public Boolean useBrowserForwarding;
@@ -1400,6 +1414,61 @@ public class V2RayConfig {
 
     }
 
+    public static class TLSMirrorObject {
+        public String forwardAddress;
+        public Integer forwardPort;
+        public String forwardTag;
+        public String carrierConnectionTag;
+        public EmbeddedTrafficGeneratorObject embeddedTrafficGenerator;
+        public String primaryKey;
+        public List<Integer> explicitNonceCiphersuites;
+        public TimeSpecObject deferInstanceDerivedWriteTime;
+        public TransportPaddingObject transportLayerPadding;
+        public ConnectionEnrolmentObject connectionEnrolment;
+        public Boolean sequenceWatermarkingEnabled;
+        public static class EmbeddedTrafficGeneratorObject {
+            public List<EmbeddedTrafficGeneratorStepObject> steps;
+            public TLSObject tlsSettings;
+            public UTLSObject utlsSettings;
+        }
+        public static class EmbeddedTrafficGeneratorStepObject {
+            public String name;
+            public String host;
+            public String path;
+            public String method;
+            public List<EmbeddedTrafficGeneratorTransferCandidateObject> nextStep;
+            public Boolean connectionReady;
+            public List<EmbeddedTrafficGeneratorHeaderObject> headers;
+            public Boolean connectionRecallExit;
+            public EmbeddedTrafficGeneratorTimeSpecObject waitTime;
+            public Boolean h2DoNotWaitForDownloadFinish;
+        }
+        public static class EmbeddedTrafficGeneratorTimeSpecObject {
+            public Long baseNanoseconds;
+            public Long uniformRandomMultiplierNanoseconds;
+        }
+        public static class EmbeddedTrafficGeneratorTransferCandidateObject {
+            public Integer weight;
+            public Long gotoLocation;
+        }
+        public static class EmbeddedTrafficGeneratorHeaderObject {
+            public String name;
+            public String value;
+            public List<String> values;
+        }
+        public static class ConnectionEnrolmentObject {
+            public String primaryIngressOutbound;
+            public String primaryEgressOutbound;
+            public String bootstrapEgressOutbound;
+        }
+        public static class TimeSpecObject {
+            public Long baseNanoseconds;
+            public Long uniformRandomMultiplierNanoseconds;
+        }
+        public static class TransportPaddingObject {
+            public Boolean enabled;
+        }
+    }
 
     public Map<String, Object> stats;
 
@@ -1428,23 +1497,6 @@ public class V2RayConfig {
         public String listenAddr;
         public Integer listenPort;
 
-    }
-
-    public ReverseObject reverse;
-
-    public static class ReverseObject {
-        public List<BridgeObject> bridges;
-        public List<PortalObject> portals;
-
-        public static class BridgeObject {
-            public String tag;
-            public String domain;
-        }
-
-        public static class PortalObject {
-            public String tag;
-            public String domain;
-        }
     }
 
     public ObservatoryObject observatory;
