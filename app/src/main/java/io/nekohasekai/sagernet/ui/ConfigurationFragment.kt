@@ -1901,17 +1901,11 @@ class ConfigurationFragment @JvmOverloads constructor(
                     address = ""
                 }
                 profileAddress.text = address
-                (trafficText.parent as View).isGone = (!showTraffic || proxyEntity.status <= 0) && address.isEmpty()
+                (trafficText.parent as View).isGone = !showTraffic && address.isEmpty()
 
                 when {
                     proxyEntity.status <= 0 -> {
-                        if (showTraffic) {
-                            profileStatus.text = trafficText.text
-                            profileStatus.setTextColor(requireContext().getColorAttr(android.R.attr.textColorSecondary))
-                            trafficText.text = ""
-                        } else {
-                            profileStatus.text = ""
-                        }
+                        profileStatus.text = ""
                     }
                     proxyEntity.status == 1 -> {
                         profileStatus.text = getString(R.string.available, proxyEntity.ping)
@@ -1991,16 +1985,10 @@ class ConfigurationFragment @JvmOverloads constructor(
                     address = ""
                 }
 
-                (trafficText.parent as View).isGone = (!showTraffic || proxyEntity.status <= 0) && address.isEmpty()
+                (trafficText.parent as View).isGone = !showTraffic && address.isEmpty()
 
                 if (proxyEntity.status <= 0) {
-                    if (showTraffic) {
-                        profileStatus.text = trafficText.text
-                        profileStatus.setTextColor(requireContext().getColorAttr(android.R.attr.textColorSecondary))
-                        trafficText.text = ""
-                    } else {
-                        profileStatus.text = ""
-                    }
+                    profileStatus.text = ""
                 }
             }
 
