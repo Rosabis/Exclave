@@ -1299,6 +1299,7 @@ class ConfigurationFragment @JvmOverloads constructor(
                     FixedLinearLayoutManager(configurationListView)
                 }
                 configurationListView.layoutManager = layoutManager
+                adapter.notifyDataSetChanged()
                 runOnDefaultDispatcher {
                     GroupManager.updateGroup(proxyGroup)
                 }
@@ -1770,56 +1771,96 @@ class ConfigurationFragment @JvmOverloads constructor(
                     }
                 }
 
-                editButton.setOnClickListener {
-                    entity.settingIntent(it.context, proxyGroup.type == GroupType.SUBSCRIPTION)?.let {
-                        editProfileLauncher.launch(it)
-                    }
-                }
+                editButton.setOnClickListener { editProfile() }
 
-                deleteButton.setOnClickListener { view ->
-                    view.post {
-                        adapter.let {
-                            val profile = entity
-                            val index = it.configurationIdList.indexOf(profile.id)
-                            if (index >= 0) {
-                                it.remove(index)
-                                it.pendingDeletedIds.add(profile.id)
-                                undoManager.remove(index to profile)
-                            }
-                        }
-                    }
-                }
+                deleteButton.setOnClickListener { deleteProfile() }
 
                 // Suppress ItemTouchHelper drag while a row button is held to avoid conflict with parent item's long press.
                 deleteButton.suppressDragWhilePressed { actionButtonPressed = it }
                 editButton.suppressDragWhilePressed { actionButtonPressed = it }
                 shareLayout.suppressDragWhilePressed { actionButtonPressed = it }
+                moreIcon.suppressDragWhilePressed { actionButtonPressed = it }
 
                 if (!parent.select) {
-                    shareLayout.setOnClickListener { anchor ->
-                        val profile = entity
-                        if (DataStore.profileSecurityAdvisory && profile.requireBean().isInsecure) {
-                            MaterialAlertDialogBuilder(requireContext())
-                                .setTitle(R.string.insecure_warn)
-                                .setMessage(R.string.insecure_warning_detail)
-                                .setPositiveButton(android.R.string.ok) { _, _ ->
-                                    showShare(anchor)
-                                }
-                                .show()
-                        } else {
-                            showShare(anchor)
-                        }
-                    }
+                    shareLayout.setOnClickListener { anchor -> shareProfile(anchor) }
+                    moreIcon.setOnClickListener { anchor -> showMoreMenu(anchor) }
                 } else {
                     shareLayout.setOnClickListener(null)
+                    moreIcon.setOnClickListener(null)
                 }
 
-                editButton.isGone = parent.select
-                deleteButton.isGone = parent.select
-                shareButton.isGone = parent.select
+                applyActionVisibility()
 
                 updateState(proxyEntity)
                 updateSelectionState(proxyEntity.id)
+            }
+
+            // In double column mode the three action buttons are collapsed into a hamburger menu.
+            fun applyActionVisibility() {
+                val parent = parent ?: return
+                if (proxyGroup.layout == GroupLayout.DOUBLE_COLUMN) {
+                    editButton.isGone = true
+                    shareLayout.isGone = true
+                    deleteButton.isGone = true
+                    moreIcon.isGone = parent.select
+                } else {
+                    moreIcon.isGone = true
+                    editButton.isGone = parent.select
+                    deleteButton.isGone = parent.select
+                    shareLayout.isGone = false
+                    shareButton.isGone = parent.select
+                }
+            }
+
+            fun editProfile() {
+                entity.settingIntent(
+                    view.context, proxyGroup.type == GroupType.SUBSCRIPTION
+                )?.let {
+                    editProfileLauncher.launch(it)
+                }
+            }
+
+            fun deleteProfile() {
+                view.post {
+                    val profile = entity
+                    val index = adapter.configurationIdList.indexOf(profile.id)
+                    if (index >= 0) {
+                        adapter.remove(index)
+                        adapter.pendingDeletedIds.add(profile.id)
+                        undoManager.remove(index to profile)
+                    }
+                }
+            }
+
+            fun shareProfile(anchor: View) {
+                val profile = entity
+                if (DataStore.profileSecurityAdvisory && profile.requireBean().isInsecure) {
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(R.string.insecure_warn)
+                        .setMessage(R.string.insecure_warning_detail)
+                        .setPositiveButton(android.R.string.ok) { _, _ ->
+                            showShare(anchor)
+                        }
+                        .show()
+                } else {
+                    showShare(anchor)
+                }
+            }
+
+            fun showMoreMenu(anchor: View) {
+                val popup = PopupMenu(requireContext(), anchor)
+                popup.menuInflater.inflate(R.menu.profile_more_menu, popup.menu)
+                popup.menu.findItem(R.id.action_more_delete).isEnabled =
+                    !(SagerNet.started && DataStore.startedProfile == entity.id)
+                popup.setOnMenuItemClickListener {
+                    when (it.itemId) {
+                        R.id.action_more_edit -> editProfile()
+                        R.id.action_more_share -> shareProfile(anchor)
+                        R.id.action_more_delete -> deleteProfile()
+                    }
+                    true
+                }
+                popup.show()
             }
 
             fun updateSelectionState(entityId: Long) {
