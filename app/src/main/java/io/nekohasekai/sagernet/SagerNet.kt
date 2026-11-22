@@ -44,6 +44,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
+import androidx.core.content.pm.ShortcutManagerCompat
 import go.Seq
 import io.nekohasekai.sagernet.bg.SagerConnection
 import io.nekohasekai.sagernet.bg.SubscriptionUpdater
@@ -54,6 +55,7 @@ import io.nekohasekai.sagernet.ktx.Logs
 import io.nekohasekai.sagernet.ktx.readableMessage
 import io.nekohasekai.sagernet.ktx.runOnDefaultDispatcher
 import io.nekohasekai.sagernet.ui.MainActivity
+import io.nekohasekai.sagernet.ui.ScannerActivity
 import io.nekohasekai.sagernet.utils.CrashHandler
 import io.nekohasekai.sagernet.utils.DefaultNetworkListener
 import io.nekohasekai.sagernet.utils.DeviceStorageApp
@@ -64,7 +66,9 @@ import kotlinx.coroutines.DEBUG_PROPERTY_VALUE_ON
 import libexclavecore.AndroidCAStore
 import libexclavecore.Libexclavecore
 import libexclavecore.UidDumper
-import java.io.ByteArrayOutputStream
+import org.bouncycastle.util.io.pem.PemObject
+import org.bouncycastle.util.io.pem.PemWriter
+import java.io.StringWriter
 import java.net.Inet6Address
 import java.net.InetSocketAddress
 import java.security.KeyStore
@@ -90,6 +94,20 @@ class SagerNet : Application(),
         DataStore.init()
         updateNotificationChannels()
         Seq.setContext(this)
+
+        if (DataStore.goDebug.isNotEmpty()) {
+            // This is set after Go runtime initialization. Therefore, not all GODEBUG can take effect.
+            Libexclavecore.setenv("GODEBUG", DataStore.goDebug)
+        }
+        if (DataStore.environmentVariables.isNotEmpty()) {
+            for (variable in DataStore.environmentVariables.split("\n")) {
+                if (!variable.contains("=")) continue
+                Libexclavecore.setenv(
+                    variable.substringBefore("="),
+                    variable.substringAfter("=")
+                )
+            }
+        }
 
         if (DataStore.getInstalledPackagesInited) {
             runOnDefaultDispatcher {
@@ -126,17 +144,17 @@ class SagerNet : Application(),
         Libexclavecore.setenv("exclave.conf.geoloader", "memconservative")
         externalAssets.mkdirs()
         Libexclavecore.initializeV2Ray(
-            filesDir.absolutePath + "/",
-            externalAssets.absolutePath + "/",
+            externalAssets.canonicalPath + "/",
             "exclave-core/",
         )
 
         try {
-            if (DataStore.providerRootCA == RootCAProvider.SYSTEM_AND_USER) {
+            if (DataStore.providerRootCA == RootCAProvider.ANDROID) {
                 Libexclavecore.registerAndroidCAStore(this)
             }
             Libexclavecore.updateSystemRoots(DataStore.providerRootCA)
         } catch (e: Exception) {
+            Logs.w(e)
             Toast.makeText(this, e.readableMessage, Toast.LENGTH_LONG).show()
         }
 
@@ -156,13 +174,15 @@ class SagerNet : Application(),
     override fun certificates(): ByteArray {
         try {
             val keyStore = KeyStore.getInstance("AndroidCAStore")
-            val byteArrayStream = ByteArrayOutputStream()
             keyStore.load(null, null)
+            val stringWriter = StringWriter()
+            val pemWriter = PemWriter(stringWriter)
             val aliases = keyStore.aliases()
             while (aliases.hasMoreElements()) {
-                byteArrayStream.write(keyStore.getCertificate(aliases.nextElement()).encoded)
+                pemWriter.writeObject(PemObject("CERTIFICATE", keyStore.getCertificate(aliases.nextElement()).encoded))
             }
-            return byteArrayStream.toByteArray()
+            pemWriter.close()
+            return stringWriter.toString().toByteArray()
         } catch (e: Exception) {
             throw e
         }
@@ -350,6 +370,44 @@ class SagerNet : Application(),
 
         fun stopService() =
             application.sendBroadcast(Intent(Action.CLOSE).setPackage(application.packageName))
+
+        fun setDynamicShortcuts(context: Context) {
+            /**
+             * Publish the shortcuts as dynamic shortcuts instead of declaring it in
+             * shortcuts.xml. The system forcibly adds FLAG_ACTIVITY_NEW_TASK, FLAG_ACTIVITY_CLEAR_TASK
+             * and FLAG_ACTIVITY_TASK_ON_HOME to the first intent of every static shortcut, which puts
+             * the home task right below the launched task, so the foreground app is sent to the
+             * background when this transparent activity finishes. Dynamic shortcuts keep their own flags.
+             * Publish the shortcuts as dynamic shortcuts to avoid hardcoding targetPackage too.
+             */
+            try {
+                val shortcuts = if (DataStore.disableToggleShortcut) {
+                    listOf(ScannerActivity.buildShortcut(context))
+                } else {
+                    listOf(
+                        QuickToggleShortcut.buildShortcut(context),
+                        ScannerActivity.buildShortcut(context)
+                    )
+                }
+                val oldShortcuts = ShortcutManagerCompat.getDynamicShortcuts(context)
+                var identical = shortcuts.size == oldShortcuts.size
+                if (identical) {
+                    for ((i, shortcut) in shortcuts.withIndex()) {
+                        if (shortcut.id == oldShortcuts[i].id) {
+                            continue
+                        } else {
+                            identical = false
+                            break
+                        }
+                    }
+                }
+                if (!identical) {
+                    ShortcutManagerCompat.setDynamicShortcuts(context, shortcuts)
+                }
+            } catch (e: Exception) {
+                Logs.w(e)
+            }
+        }
 
     }
 

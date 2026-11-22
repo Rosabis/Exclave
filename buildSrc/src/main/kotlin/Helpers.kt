@@ -79,6 +79,14 @@ fun Project.setupCommon(projectName: String = "") {
         lint.checkAllWarnings = true
         lint.checkReleaseBuilds = false
         lint.warningsAsErrors = true
+        androidResources.apply {
+            ignoreAssetsPatterns.addAll(listOf(
+                "<file>geosite.version.txt",
+                "<file>geosite.sha256sum.txt",
+                "<file>geoip.version.txt",
+                "<file>geoip.sha256sum.txt",
+            ))
+        }
         packaging.jniLibs.useLegacyPackaging = true
         // Do not strip symbols by AGP to improve reproducibility. Symbols are manually stripped in advanced.
         packaging.jniLibs.keepDebugSymbols.add("**/*.so")
@@ -91,6 +99,7 @@ fun Project.setupCommon(projectName: String = "") {
                 "/META-INF/native-image/**",
                 "/META-INF/INDEX.LIST",
                 "/META-INF/LICENSE.md",
+                "/META-INF/NOTICE.md",
                 "DebugProbesKt.bin",
                 "com/**",
                 "org/**",
@@ -207,10 +216,9 @@ fun Project.setupApp() {
         }
         productFlavors.create("legacy") {
             minSdk = 21
-            proguardFiles("proguard-rules-legacy.pro")
         }
         tasks.register("downloadAssets") {
-            downloadAssets(update = false)
+            downloadAssets()
         }
         tasks.register("updateAssets") {
             downloadRootCAList()

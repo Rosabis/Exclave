@@ -32,6 +32,7 @@ import io.nekohasekai.sagernet.SagerNet
 import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.databinding.LayoutStunBinding
 import io.nekohasekai.sagernet.ktx.PUBLIC_STUN_SERVERS
+import io.nekohasekai.sagernet.ktx.app
 import io.nekohasekai.sagernet.ktx.listByLineOrComma
 import io.nekohasekai.sagernet.ktx.onMainDispatcher
 import io.nekohasekai.sagernet.ktx.runOnDefaultDispatcher

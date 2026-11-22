@@ -47,6 +47,7 @@ import io.nekohasekai.sagernet.fmt.hysteria2.Hysteria2Bean
 import io.nekohasekai.sagernet.fmt.internal.BalancerBean
 import io.nekohasekai.sagernet.fmt.internal.ConfigBean
 import io.nekohasekai.sagernet.fmt.juicity.JuicityBean
+import io.nekohasekai.sagernet.fmt.masque.MASQUEBean
 import io.nekohasekai.sagernet.fmt.mieru.MieruBean
 import io.nekohasekai.sagernet.fmt.shadowquic.ShadowQUICBean
 import io.nekohasekai.sagernet.fmt.shadowsocks.ShadowsocksBean
@@ -108,7 +109,6 @@ import io.nekohasekai.sagernet.fmt.wireguard.WireGuardBean
 import io.nekohasekai.sagernet.ktx.app
 import io.nekohasekai.sagernet.ktx.getArray
 import io.nekohasekai.sagernet.ktx.getBoolean
-import io.nekohasekai.sagernet.ktx.getBooleanProperty
 import io.nekohasekai.sagernet.ktx.getObject
 import io.nekohasekai.sagernet.ktx.getString
 import io.nekohasekai.sagernet.ktx.getStringArray
@@ -289,7 +289,8 @@ fun buildV2RayConfig(
     val destinationOverride = DataStore.destinationOverride
     val trafficStatistics = !forTest && DataStore.profileTrafficStatistics
     var hasTagDirect = false
-    var directNeedsInterruption = false
+    val singUotEnabled = DataStore.singuot
+    val singMuxEnabled = DataStore.singmux
 
     val shouldDumpUID = extraRules.any { it.packages.isNotEmpty() || it.customPackageNames.isNotEmpty() }
     val alerts = mutableListOf<Pair<Int, String>>()
@@ -646,11 +647,8 @@ fun buildV2RayConfig(
                                         pass = password
                                     })
                                 })
-                                if (proxyEntity.naiveBean != null && proxyEntity.naiveBean!!.singUoT && DataStore.experimentalFlagsProperties.getBooleanProperty( "singuot")) {
+                                if (proxyEntity.naiveBean != null && proxyEntity.naiveBean!!.singUoT && singUotEnabled) {
                                     uot = true
-                                }
-                                if (proxyEntity.naiveBean != null) {
-                                    directNeedsInterruption = true
                                 }
                             })
                         }
@@ -750,8 +748,8 @@ fun buildV2RayConfig(
                                                         plugin = pluginConfiguration.selected
                                                         pluginOpts = pluginConfiguration.getOptions().toString()
                                                         if (!forExport
-                                                            && !(plugin == "v2ray-plugin" && DataStore.experimentalFlagsProperties.getBooleanProperty("useInternalV2RayPlugin"))
-                                                            && !(plugin == "obfs-local" && DataStore.experimentalFlagsProperties.getBooleanProperty("useInternalObfsLocal"))
+                                                            && !(plugin == "v2ray-plugin" && DataStore.useInternalV2RayPlugin)
+                                                            && !(plugin == "obfs-local" && DataStore.useInternalObfsLocal)
                                                         ) {
                                                             try {
                                                                 PluginManager.init(pluginConfiguration)?.let { (path, opts, isV2) ->
@@ -782,7 +780,7 @@ fun buildV2RayConfig(
                                                         }
                                                     }
                                                 }
-                                                if (bean.singUoT && DataStore.experimentalFlagsProperties.getBooleanProperty( "singuot")) {
+                                                if (bean.singUoT && singUotEnabled) {
                                                     uot = bean.singUoT
                                                 }
                                             })
@@ -795,20 +793,20 @@ fun buildV2RayConfig(
                                             servers = listOf(SocksOutboundConfigurationObject.ServerObject().apply {
                                                 address = bean.serverAddress
                                                 port = bean.serverPort
-                                                if (bean.username.isNotEmpty() || bean.password.isNotEmpty() && bean.protocol == SOCKSBean.PROTOCOL_SOCKS5) {
+                                                if ((bean.username.isNotEmpty() || bean.password.isNotEmpty()) && bean.protocol == SOCKSBean.PROTOCOL_SOCKS5) {
                                                     users = listOf(SocksOutboundConfigurationObject.ServerObject.UserObject().apply {
                                                         user = bean.username
                                                         pass = bean.password
                                                     })
                                                 }
-                                                if (bean.protocol == SOCKSBean.PROTOCOL_SOCKS4 || bean.protocol == SOCKSBean.PROTOCOL_SOCKS4A && bean.username.isNotEmpty()) {
+                                                if ((bean.protocol == SOCKSBean.PROTOCOL_SOCKS4 || bean.protocol == SOCKSBean.PROTOCOL_SOCKS4A) && bean.username.isNotEmpty()) {
                                                     users = listOf(SocksOutboundConfigurationObject.ServerObject.UserObject().apply {
                                                         user = bean.username
                                                     })
                                                 }
                                             })
                                             version = bean.protocolVersionName()
-                                            if (bean.singUoT && DataStore.experimentalFlagsProperties.getBooleanProperty("singuot")) {
+                                            if (bean.singUoT && singUotEnabled) {
                                                 uot = bean.singUoT
                                             }
                                         }
@@ -882,11 +880,21 @@ fun buildV2RayConfig(
                                                 if (bean.allowInsecure) {
                                                     allowInsecure = true
                                                 }
-                                                val overrideFingerprint = DataStore.experimentalFlagsProperties.getProperty("overrideUTLSFingerprintForTLS")
-                                                if (!overrideFingerprint.isNullOrEmpty()) {
-                                                    fingerprint = overrideFingerprint
-                                                } else if (bean.utlsFingerprint.isNotEmpty()) {
-                                                    fingerprint = bean.utlsFingerprint
+                                                val canSetFingerprint = when (bean.type) {
+                                                    "kcp", "quic", "hysteria2" -> false
+                                                    "splithttp" -> !bean.shUseBrowserForwarder &&
+                                                            (bean.alpn.listByLineOrComma().size != 1 ||
+                                                            bean.alpn.listByLineOrComma()[0] != "h3")
+                                                    "ws" -> !bean.wsUseBrowserForwarder
+                                                    else -> true
+                                                }
+                                                if (canSetFingerprint) {
+                                                    val overrideFingerprint = DataStore.overrideUTLSFingerprintForTLS
+                                                    if (overrideFingerprint.isNotEmpty()) {
+                                                        fingerprint = overrideFingerprint
+                                                    } else if (bean.utlsFingerprint.isNotEmpty()) {
+                                                        fingerprint = bean.utlsFingerprint
+                                                    }
                                                 }
                                                 if (bean.echEnabled) {
                                                     ech = TLSObject.ECHObject().apply {
@@ -917,11 +925,19 @@ fun buildV2RayConfig(
                                                 if (bean.realityMldsa65Verify.isNotEmpty()) {
                                                     mldsa65Verify = bean.realityMldsa65Verify
                                                 }
-                                                val overrideFingerprint = DataStore.experimentalFlagsProperties.getProperty("overrideUTLSFingerprintForREALITY")
-                                                if (!overrideFingerprint.isNullOrEmpty()) {
-                                                    fingerprint = overrideFingerprint
-                                                } else if (bean.realityFingerprint.isNotEmpty()) {
-                                                    fingerprint = bean.realityFingerprint
+                                                val canSetFingerprint = when (bean.type) {
+                                                    "kcp", "quic", "hysteria2" -> false
+                                                    "ws" -> !bean.wsUseBrowserForwarder
+                                                    "splithttp" -> !bean.wsUseBrowserForwarder
+                                                    else -> true
+                                                }
+                                                if (canSetFingerprint) {
+                                                    val overrideFingerprint = DataStore.overrideUTLSFingerprintForREALITY
+                                                    if (overrideFingerprint.isNotEmpty()) {
+                                                        fingerprint = overrideFingerprint
+                                                    } else if (bean.realityFingerprint.isNotEmpty()) {
+                                                        fingerprint = bean.realityFingerprint
+                                                    }
                                                 }
                                                 if (DataStore.realityDisableX25519Mlkem768 || bean.realityDisableX25519Mlkem768 && !forExport) {
                                                     disableX25519MLKEM768 = true
@@ -1061,6 +1077,10 @@ fun buildV2RayConfig(
                                                 }
                                                 if (bean.splithttpMode != "auto") {
                                                     mode = bean.splithttpMode
+                                                }
+                                                if (bean.splithttpChromeParrot && bean.security == "tls" && bean.alpn.listByLineOrComma().size == 1 &&
+                                                    bean.alpn.listByLineOrComma()[0] == "h3") {
+                                                    chromeParrot = true
                                                 }
                                                 if (bean.splithttpExtra.isNotEmpty()) {
                                                     try {
@@ -1219,6 +1239,7 @@ fun buildV2RayConfig(
                                         && !(bean is ShadowsocksBean && bean.plugin.isNotEmpty() && PluginConfiguration(bean.plugin).selected.isNotEmpty())
                                         && !(network == "ws" && bean.wsUseBrowserForwarder)
                                         && !(network == "splithttp" && bean.shUseBrowserForwarder)
+                                        && !(network == "splithttp" && security == "tls" && bean.alpn.listByLineOrComma().size == 1 && bean.alpn.listByLineOrComma()[0] == "h3")
                                     ) {
                                         sockopt = StreamSettingsObject.SockoptObject().apply {
                                             tlsFragmentation = StreamSettingsObject.SockoptObject.TLSFragmentationObject().apply {
@@ -1442,7 +1463,7 @@ fun buildV2RayConfig(
                                         congestionControl = bean.congestionControl
                                         udpRelayMode = bean.udpRelayMode
                                         if (bean.zeroRTTHandshake) zeroRTTHandshake = bean.zeroRTTHandshake
-                                        if (bean.singUDPOverStream && DataStore.experimentalFlagsProperties.getBooleanProperty("singuot")) {
+                                        if (bean.singUDPOverStream && singUotEnabled) {
                                             udpOverStream = bean.singUDPOverStream
                                         }
                                     }
@@ -1636,8 +1657,8 @@ fun buildV2RayConfig(
                                                 if (bean.allowInsecure) {
                                                     allowInsecure = true
                                                 }
-                                                val overrideFingerprint = DataStore.experimentalFlagsProperties.getProperty("overrideUTLSFingerprintForTLS")
-                                                if (!overrideFingerprint.isNullOrEmpty()) {
+                                                val overrideFingerprint = DataStore.overrideUTLSFingerprintForTLS
+                                                if (overrideFingerprint.isNotEmpty()) {
                                                     fingerprint = overrideFingerprint
                                                 } else if (bean.utlsFingerprint.isNotEmpty()) {
                                                     fingerprint = bean.utlsFingerprint
@@ -1668,8 +1689,8 @@ fun buildV2RayConfig(
                                                 if (bean.realityShortId.isNotEmpty()) {
                                                     shortId = bean.realityShortId
                                                 }
-                                                val overrideFingerprint = DataStore.experimentalFlagsProperties.getProperty("overrideUTLSFingerprintForREALITY")
-                                                if (!overrideFingerprint.isNullOrEmpty()) {
+                                                val overrideFingerprint = DataStore.overrideUTLSFingerprintForREALITY
+                                                if (overrideFingerprint.isNotEmpty()) {
                                                     fingerprint = overrideFingerprint
                                                 } else if (bean.realityFingerprint.isNotEmpty()) {
                                                     fingerprint = bean.realityFingerprint
@@ -1793,7 +1814,7 @@ fun buildV2RayConfig(
                                     if (version == SnellBean.VERSION_6) {
                                         mode = bean.mode
                                     }
-                                    if (DataStore.experimentalFlagsProperties.getBooleanProperty("singSnellUserKey") && bean.userKey.isNotEmpty()) {
+                                    if (DataStore.singSnellUserKey && bean.userKey.isNotEmpty()) {
                                         userKey = bean.userKey
                                     }
                                 })
@@ -1883,9 +1904,9 @@ fun buildV2RayConfig(
                                         if (bean.allowInsecure) {
                                             allowInsecure = true
                                         }
-                                        if (protocol == "https") {
-                                            val overrideFingerprint = DataStore.experimentalFlagsProperties.getProperty("overrideUTLSFingerprintForTLS")
-                                            if (!overrideFingerprint.isNullOrEmpty()) {
+                                        if (bean.protocol == "https") {
+                                            val overrideFingerprint = DataStore.overrideUTLSFingerprintForTLS
+                                            if (overrideFingerprint.isNotEmpty()) {
                                                 fingerprint = overrideFingerprint
                                             } else if (bean.utlsFingerprint.isNotEmpty()) {
                                                 fingerprint = bean.utlsFingerprint
@@ -1903,6 +1924,24 @@ fun buildV2RayConfig(
                                         }
                                         if (bean.serverNameToVerify.isNotEmpty()) {
                                             serverNameToVerify = bean.serverNameToVerify.listByLineOrComma()
+                                        }
+                                    }
+                                    if (bean.protocol == "https" && DataStore.enableFragment) {
+                                        sockopt = StreamSettingsObject.SockoptObject().apply {
+                                            tlsFragmentation = StreamSettingsObject.SockoptObject.TLSFragmentationObject().apply {
+                                                when (DataStore.fragmentMethod) {
+                                                    TLS_FRAGMENTATION_METHOD.TLS_RECORD_FRAGMENTATION -> {
+                                                        tlsRecordFragmentation = true
+                                                    }
+                                                    TLS_FRAGMENTATION_METHOD.TCP_SEGMENTATION -> {
+                                                        tcpSegmentation = true
+                                                    }
+                                                    TLS_FRAGMENTATION_METHOD.TLS_RECORD_FRAGMENTATION_AND_TCP_SEGMENTATION -> {
+                                                        tlsRecordFragmentation = true
+                                                        tcpSegmentation = true
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -1923,6 +1962,100 @@ fun buildV2RayConfig(
                                         alpn = bean.alpn.listByLineOrComma()
                                     }
                                 })
+                            } else if (bean is MASQUEBean) {
+                                protocol = "masque"
+                                settings = LazyOutboundConfigurationObject(this,
+                                    V2RayConfig.MASQUEOutboundConfigurationObject().apply {
+                                        address = bean.serverAddress
+                                        port = bean.serverPort
+                                        if (bean.username.isNotEmpty()) username = bean.username
+                                        if (bean.password.isNotEmpty()) password = bean.password
+                                        if (bean.uriTemplate.isNotEmpty()) uriTemplate = bean.uriTemplate
+                                        if (bean.http3) http3 = true
+                                        if (bean.mtu != 0) mtu = bean.mtu
+                                    }
+                                )
+                                if (bean.security == "tls") {
+                                    streamSettings = StreamSettingsObject().apply {
+                                        security = "tls"
+                                        tlsSettings = TLSObject().apply {
+                                            if (bean.sni.isNotEmpty()) {
+                                                serverName = bean.sni
+                                            }
+                                            if (bean.certificates.isNotEmpty() || bean.mtlsCertificate.isNotEmpty() || bean.mtlsCertificatePrivateKey.isNotEmpty()) {
+                                                certificates = mutableListOf()
+                                                if (bean.certificates.isNotEmpty()) {
+                                                    disableSystemRoot = true
+                                                    certificates.add(TLSObject.CertificateObject().apply {
+                                                        usage = "verify"
+                                                        certificate = bean.certificates.lines()
+                                                    })
+                                                }
+                                                if (bean.mtlsCertificate.isNotEmpty() || bean.mtlsCertificatePrivateKey.isNotEmpty()) {
+                                                    certificates.add(TLSObject.CertificateObject().apply {
+                                                        usage = "encipherment"
+                                                        certificate = bean.mtlsCertificate.lines()
+                                                        key = bean.mtlsCertificatePrivateKey.lines()
+                                                    })
+                                                }
+                                            }
+                                            if (bean.pinnedPeerCertificateSha256.isNotEmpty()) {
+                                                pinnedPeerCertificateSha256 = mutableListOf()
+                                                bean.pinnedPeerCertificateSha256.listByLineOrComma().forEach {
+                                                    pinnedPeerCertificateSha256.add(it.replace(":", ""))
+                                                }
+                                            }
+                                            if (bean.pinnedPeerCertificatePublicKeySha256.isNotEmpty()) {
+                                                pinnedPeerCertificatePublicKeySha256 = bean.pinnedPeerCertificatePublicKeySha256.listByLineOrComma()
+                                            }
+                                            if (bean.pinnedPeerCertificateChainSha256.isNotEmpty()) {
+                                                pinnedPeerCertificateChainSha256 = bean.pinnedPeerCertificateChainSha256.listByLineOrComma()
+                                            }
+                                            if (bean.allowInsecure) {
+                                                allowInsecure = true
+                                            }
+                                            if (!bean.http3) {
+                                                val overrideFingerprint = DataStore.overrideUTLSFingerprintForTLS
+                                                if (overrideFingerprint.isNotEmpty()) {
+                                                    fingerprint = overrideFingerprint
+                                                } else if (bean.utlsFingerprint.isNotEmpty()) {
+                                                    fingerprint = bean.utlsFingerprint
+                                                }
+                                            }
+                                            if (bean.echEnabled) {
+                                                ech = TLSObject.ECHObject().apply {
+                                                    enabled = bean.echEnabled
+                                                    if (bean.echConfigList.isNotEmpty()) {
+                                                        config = bean.echConfigList
+                                                    } else if (bean.echQueryName.isNotEmpty()) {
+                                                        queryDomain = bean.echQueryName
+                                                    }
+                                                }
+                                            }
+                                            if (bean.serverNameToVerify.isNotEmpty()) {
+                                                serverNameToVerify = bean.serverNameToVerify.listByLineOrComma()
+                                            }
+                                        }
+                                        if (!bean.http3 && DataStore.enableFragment) {
+                                            sockopt = StreamSettingsObject.SockoptObject().apply {
+                                                tlsFragmentation = StreamSettingsObject.SockoptObject.TLSFragmentationObject().apply {
+                                                    when (DataStore.fragmentMethod) {
+                                                        TLS_FRAGMENTATION_METHOD.TLS_RECORD_FRAGMENTATION -> {
+                                                            tlsRecordFragmentation = true
+                                                        }
+                                                        TLS_FRAGMENTATION_METHOD.TCP_SEGMENTATION -> {
+                                                            tcpSegmentation = true
+                                                        }
+                                                        TLS_FRAGMENTATION_METHOD.TLS_RECORD_FRAGMENTATION_AND_TCP_SEGMENTATION -> {
+                                                            tlsRecordFragmentation = true
+                                                            tcpSegmentation = true
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                             if (bean is StandardV2RayBean && bean.mux) {
                                 mux = OutboundObject.MuxObject().apply {
@@ -1939,7 +2072,7 @@ fun buildV2RayConfig(
                                 }
                             }
                             if ((bean is ShadowsocksBean || bean is TrojanBean || bean is VMessBean || bean is VLESSBean)
-                                && bean.singMux && DataStore.experimentalFlagsProperties.getBooleanProperty("singmux")) {
+                                && bean.singMux && singMuxEnabled) {
                                 smux = OutboundObject.SmuxObject().apply {
                                     enabled = bean.singMux
                                     protocol = bean.singMuxProtocol
@@ -1997,7 +2130,6 @@ fun buildV2RayConfig(
                     val mappingPort = mkPort()
                     bean.finalAddress = LOCALHOST
                     bean.finalPort = mappingPort
-                    bean.isChain = true
 
                     inbounds.add(InboundObject().apply {
                         listen = LOCALHOST
@@ -2009,11 +2141,13 @@ fun buildV2RayConfig(
                                 address = bean.serverAddress
                                 network = bean.network()
                                 port = bean.serverPort
+                                if (!forExport && DataStore.interruptReusedConnections && proxyEntity.naiveBean != null) {
+                                    interruptConnections = true
+                                }
                             })
-
                         pastInboundTag = tag
                     })
-                } else if (bean.canMapping() && proxyEntity.needExternal()) {
+                } else if (proxyEntity.needExternal()) {
                     val mappingPort = mkPort()
                     bean.finalAddress = LOCALHOST
                     bean.finalPort = mappingPort
@@ -2028,6 +2162,9 @@ fun buildV2RayConfig(
                                 address = bean.serverAddress
                                 network = bean.network()
                                 port = bean.serverPort
+                                if (!forExport && DataStore.interruptReusedConnections && proxyEntity.naiveBean != null) {
+                                    interruptConnections = true
+                                }
                             })
                         routing.rules.add(RoutingObject.RuleObject().apply {
                             type = "field"
@@ -2247,7 +2384,7 @@ fun buildV2RayConfig(
         for (rule in extraRules) {
             val uidList = mutableListOf<Int>()
             if (rule.packages.isNotEmpty() || rule.customPackageNames.isNotEmpty()) {
-                if (!isVpn) {
+                if (!isVpn && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     alerts.add(Alerts.ROUTE_ALERT_NOT_VPN to rule.displayName())
                     continue
                 }
@@ -2386,13 +2523,6 @@ fun buildV2RayConfig(
             outbounds.add(OutboundObject().apply {
                 tag = TAG_DIRECT
                 protocol = "freedom"
-                if (!forExport && DataStore.interruptReusedConnections && directNeedsInterruption) {
-                    settings = LazyOutboundConfigurationObject(this,
-                        FreedomOutboundConfigurationObject().apply {
-                            interruptConnections = true
-                        }
-                    )
-                }
             })
         }
 
@@ -2473,7 +2603,7 @@ fun buildV2RayConfig(
             settings = LazyOutboundConfigurationObject(this,
                 DNSOutboundConfigurationObject().apply {
                     userLevel = 1
-                    if (DataStore.experimentalFlagsProperties.getBooleanProperty("lookupAsExchange")) {
+                    if (DataStore.lookupAsExchange) {
                         lookupAsExchange = true
                     }
                 })
@@ -2569,8 +2699,8 @@ fun buildV2RayConfig(
         }
 
         if (DataStore.enableDnsRouting) {
-            val directDNSDomainList = DataStore.experimentalFlagsProperties.getProperty("directDNSDomainList")
-            if (directDNSDomainList != null) {
+            val directDNSDomainList = DataStore.directDNSDomainList
+            if (directDNSDomainList.isNotEmpty()) {
                 if (!forTest && DataStore.routeMode == RouteMode.RULE) {
                     bypassDomain.addAll(directDNSDomainList.split(","))
                 }
@@ -2581,8 +2711,8 @@ fun buildV2RayConfig(
                     }
                 }
             }
-            val remoteDNSDomainList = DataStore.experimentalFlagsProperties.getProperty("remoteDNSDomainList")
-            if (remoteDNSDomainList != null) {
+            val remoteDNSDomainList = DataStore.remoteDNSDomainList
+            if (remoteDNSDomainList.isNotEmpty()) {
                 if (!forTest && DataStore.routeMode == RouteMode.RULE) {
                     proxyDomain.addAll(remoteDNSDomainList.split(","))
                 }
@@ -2917,7 +3047,6 @@ fun buildCustomConfig(proxy: ProxyEntity, forTest: Boolean = false, forExport: B
                     routeOnly = DataStore.trafficSniffing && !DataStore.destinationOverride
                 }
             }
-            if (shouldDumpUID) dumpUID = true
         })
         inbounds.add(InboundObject().apply {
             tag = TAG_DNS_IN

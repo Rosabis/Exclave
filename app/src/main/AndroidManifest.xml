@@ -3,8 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="internalOnly">
 
-    <uses-sdk tools:overrideLibrary="com.google.zxing.client.android" />
-
     <permission
         android:name="${applicationId}.SERVICE"
         android:protectionLevel="signature" />
@@ -17,7 +15,8 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"
         tools:ignore="BackgroundLocationPolicy" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"
+        tools:ignore="ForegroundServicesPolicy" />
     <uses-permission
         android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission
@@ -96,9 +95,6 @@
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="33"
         tools:ignore="Deprecated">
-        <meta-data
-            android:name="android.app.shortcuts"
-            android:resource="@xml/shortcuts" />
 
         <activity
             android:name="io.nekohasekai.sagernet.ui.MainActivity"
@@ -152,10 +148,6 @@
                 <data android:scheme="sq" />
                 <data android:scheme="shadowquic" />
             </intent-filter>
-
-            <meta-data
-                android:name="android.app.shortcuts"
-                android:resource="@xml/shortcuts" />
         </activity>
         <activity
             android:name="io.nekohasekai.sagernet.ui.VpnRequestActivity"
@@ -199,6 +191,8 @@
             android:name="io.nekohasekai.sagernet.ui.profile.TrustTunnelSettingsActivity" />
         <activity
             android:name="io.nekohasekai.sagernet.ui.profile.SnellSettingsActivity" />
+        <activity
+            android:name="io.nekohasekai.sagernet.ui.profile.MASQUESettingsActivity" />
         <activity
             android:name="io.nekohasekai.sagernet.ui.profile.ConfigSettingsActivity" />
         <activity

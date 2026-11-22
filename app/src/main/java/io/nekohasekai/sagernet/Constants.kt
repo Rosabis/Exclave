@@ -26,6 +26,8 @@ object Key {
     const val DB_PUBLIC = "configuration.db"
     const val DB_PROFILE = "sager_net.db"
 
+    const val APP_VERSION_CODE = "appVersionCode"
+
     const val PERSIST_ACROSS_REBOOT = "isAutoConnect"
     const val APP_THEME = "appTheme"
     const val NIGHT_THEME = "nightTheme"
@@ -101,6 +103,8 @@ object Key {
     const val LOG_LEVEL_DEBUG_WARNING_DISABLE = "logLevelDebugWarningDisable"
     const val ENABLE_DEBUG = "enableDebug"
     const val PPROF_SERVER = "pprofServer"
+    const val GODEBUG = "goDebug"
+    const val ENVIRONMENT_VARIABLES = "environmentVariables"
 
     const val ALWAYS_SHOW_ADDRESS = "alwaysShowAddress"
     const val SHOW_GROUP_NAME = "showGroupName"
@@ -119,6 +123,8 @@ object Key {
     const val FAB_STYLE = "fabStyle"
     const val USE_IEC_UNIT = "useIECUnit"
     const val QUERY_ALL_PACKAGES_ALTERNATIVE_METHOD = "queryAllPackagesAlternativeMethod"
+    const val DISABLE_TOGGLE_SHORTCUT = "disableToggleShortcut"
+    const val DISABLE_TASKER_INTEGRATION = "disableTaskerIntegration"
 
     const val ENABLE_FRAGMENT = "enableFragment"
     const val ENABLE_FRAGMENT_FOR_DIRECT = "enableFragmentForDirect"
@@ -173,6 +179,7 @@ object Key {
     const val SERVER_WS_MAX_EARLY_DATA = "serverWsMaxEarlyData"
     const val SERVER_SPLITHTTP_MODE = "serverSplithttpMode"
     const val SERVER_SPLITHTTP_EXTRA = "serverSplithttpExtra"
+    const val SERVER_SPLITHTTP_CHROME_PARROT = "serverSplithttpChromeParrot"
     const val SERVER_WS_BROWSER_FORWARDING = "serverWsBrowserForwarding"
     const val SERVER_SH_BROWSER_FORWARDING = "serverShBrowserForwarding"
     const val SERVER_EARLY_DATA_HEADER_NAME = "serverEarlyDataHeaderName"
@@ -244,6 +251,9 @@ object Key {
     const val SERVER_HTTP_CONNECT_UDP_CATEGORY = "serverHTTPConnectUDPCategory"
     const val SERVER_HTTP_CONNECT_UDP = "serverHTTPConnectUDP"
     const val SERVER_HTTP_CONNECT_UDP_URI_TEMPLATE = "serverHTTPConnectUDPURITemplate"
+    const val SERVER_MASQUE_URI_TEMPLATE = "serverMASQUEURITemplate"
+    const val SERVER_MASQUE_MTU = "serverMASQUEMTU"
+    const val SERVER_MASQUE_HTTP3 = "serverMASQUEHTTP3"
 
     const val SERVER_PORTS = "serverPorts"
     const val SERVER_HOP_INTERVAL = "serverHopInterval"
@@ -365,8 +375,8 @@ object TunImplementation {
 
 object RootCAProvider {
     const val MOZILLA = 0
-    const val SYSTEM = 1
-    const val SYSTEM_AND_USER = 2 // for https://github.com/golang/go/issues/71258
+    const val GO = 1
+    const val ANDROID = 2
     const val CUSTOM = 3
 }
 
